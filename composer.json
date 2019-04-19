@@ -1,0 +1,12 @@
+{
+    "name": "wr8konedone/roll-keeper",
+    "require": {
+        "slim/slim": "^3.12"
+    },
+    "authors": [
+        {
+            "name": "AUnderwood9",
+            "email": "aunderwood797@gmail.com"
+        }
+    ]
+}
