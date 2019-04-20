@@ -3,6 +3,7 @@ import { RouteComponentProps, BrowserRouter, Router, Switch, Route } from 'react
 import { History, Location } from "history";
 
 import MonthContainer from "./MonthContainer";
+import LandingPageContainer from "./LandingPage/LandingPageContainer";
 
 // const App: React.SFC = () => <div>Hello World</div>;
 
@@ -18,7 +19,7 @@ class App extends React.Component<{}>{
 			<BrowserRouter>
 				<div className="mainContainer">
 					<Switch>
-						<Route path="/" exact component={MonthContainer}/>
+						<Route path="/" exact component={LandingPageContainer}/>
 					</Switch>
 				</div>
 			</BrowserRouter>
