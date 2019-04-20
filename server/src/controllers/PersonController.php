@@ -10,6 +10,17 @@
             parent::__construct($dbConnection, $this->tableName);
 		}
 
+		function getAllPeople($personType){
+			if($personType == "instructor"){
+				return parent::getDbConnection()->getAll($this->instructorTable, ["id","S_FIRST_NAME", "S_LAST_NAME", "N_CONTACT_ID"], 
+																					["instructorId", "firstName", "lastName", "contactId"]);
+			}
+			else{
+				return parent::getDbConnection()->getAll($this->tableName, ["id","S_FIRST_NAME", "S_LAST_NAME", "N_COURSE_ID", "N_CONTACT_ID"],
+																			["studentId", "firstName", "lastName", "courseId", "contactId"]);
+			}
+		}
+
 		function createPerson($personType, $personCreateSet, $contactCreateSet){
 			$personInsertSet = ["S_FIRST_NAME" => $personCreateSet["firstName"], "S_LAST_NAME" => $personCreateSet["lastName"]];
 			$contactInsertSet = ["S_PRIMARY_PHONE" => $contactCreateSet["phoneNumber"], "S_PRIMARY_EMAIL" => $contactCreateSet["email"]];

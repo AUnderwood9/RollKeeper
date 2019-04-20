@@ -3,6 +3,14 @@
 	use \Psr\Http\Message\ServerRequestInterface as Request;
 	use \Psr\Http\Message\ResponseInterface as Response;
 
+	$this->get('/person/all/{type}', function (Request $request, Response $response, array $args) {
+		$personController = new PersonController(new DaoManager());
+
+		$response->getBody()->write(json_encode($personController->getAllPeople($args["type"])));
+
+        return $response;
+	});
+
 	$this->get('/person/student/{id}', function (Request $request, Response $response, array $args) {
 		$personController = new PersonController(new DaoManager());
 
