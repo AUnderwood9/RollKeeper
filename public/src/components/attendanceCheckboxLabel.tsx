@@ -4,7 +4,7 @@ interface Props{
 
 }
 
-const attendanceCheckboxLabel: React.SFC<Props> = () => (
+const attendanceCheckboxLabel: React.FunctionComponent<Props> = () => (
 	<React.Fragment>
 		
 	</React.Fragment>

@@ -11,7 +11,8 @@
 		}
 
 		function getCourseList(){
-			return parent::getDbConnection()->getAll($this->tableName,["id, S_TITLE, N_INSTRUCTOR_ID, D_TERM_START, D_TERM_END, S_CLASS_DAYS"]);
+			return parent::getDbConnection()->getAll($this->tableName,["id" , "S_TITLE", "N_INSTRUCTOR_ID", "D_TERM_START", "D_TERM_END", "S_CLASS_DAYS"], 
+																	["courseId", "courseTitle", "instructorId", "termStart", "termEnd", "classDays"]);
 		}
 
 		function createCourse($courseTitle, $instructorId, $termStart, $termEnd, $termDays){

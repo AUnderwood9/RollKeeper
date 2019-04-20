@@ -6,8 +6,13 @@
 
 	$this->get('/courses', function (Request $request, Response $response, array $args) {
 		$courseController = new CourseController(new DaoManager());
+		$controllerResponse = json_encode($courseController->getCourseList());
 
-		$response->getBody()->write(json_encode($courseController->getCourseList()));
+		// $response->getBody()->write(json_encode(["courseId" => $controllerResponse["id"], "courseTitle" => $controllerResponse["S_TITLE"], 
+		// 									"instructorId" => $controllerResponse["N_INSTRUCTOR_ID"], "termStart" => $controllerResponse["D_TERM_START"],
+		// 									"termEnd" => $controllerResponse["D_TERM_END"], "classDays" => $controllerResponse["S_CLASS_DAYS"]]));
+
+		$response->getBody()->write($controllerResponse);
 
         return $response;
 	});

@@ -9,7 +9,7 @@
 	height: 15vh;
 }
 
-#attendance-modal-containner{
+#attendance-modal-containner, #create-courses-modal-container, #create-person-modal-container{
 	/* visibility: hidden; */
 	display: none;
 	justify-content: space-between;

@@ -4,3 +4,4 @@ node_modules
 dist
 vendor
 test.json
+yarn-error.log

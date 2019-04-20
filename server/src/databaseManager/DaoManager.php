@@ -91,8 +91,18 @@
          *
          * @TODO Abstract into its own class
 		 */
-		function buildColumns($columnArray){
-		    return (count($columnArray) == 1) ? $columnArray[0] : join(", ",$columnArray);
+		function buildColumns($columnArray, $aliasList=null){
+			if(isExisting($aliasList)){
+
+				$mergedColumn = [];
+				for ($i=0; $i < count($columnArray); $i++) { 
+					array_push($mergedColumn, "$columnArray[$i] AS $aliasList[$i]");
+				}
+				return (count($mergedColumn) == 1) ? $mergedColumn[0] : join(", ",$mergedColumn);
+			}
+			else{
+				return (count($columnArray) == 1) ? $columnArray[0] : join(", ",$columnArray);
+			}
         }
 
         /**
@@ -120,9 +130,9 @@
          *
          * @return array
          */
-		function getAll($tableName, $columnsToSelect=["*"]){
+		function getAll($tableName, $columnsToSelect=["*"], $alisList=null){
 			
-			$columnsToSelect = $this->buildColumns($columnsToSelect);
+			$columnsToSelect = $this->buildColumns($columnsToSelect, $alisList);
 			$sql = "SELECT $columnsToSelect FROM $tableName";
 			
 			$statement = $this->dbConn->prepare($sql);
@@ -143,10 +153,11 @@
          *
          * @return array
 		 */
-		function getRecordsWhere($tableName, $columnsAndData, $columnsToSelect=["*"], $resultType=ResultSetTypeEnum::SingleResultSet){
+		function getRecordsWhere($tableName, $columnsAndData, $columnsToSelect=["*"], $resultType=ResultSetTypeEnum::SingleResultSet, 
+								$aliasList=null){
 			$operationType = new OperationTypeEnum(OperationTypeEnum::RecordRetrieval);
 			$placeholderSet = $this->generatePlaceholders($operationType, $columnsAndData);
-			$columnsToSelect = $this->buildColumns($columnsToSelect);
+			$columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
 
 			$sql = "SELECT $columnsToSelect FROM $tableName WHERE $placeholderSet";
 			
@@ -165,8 +176,9 @@
          *
          * @return array
 		 */
-		function getRecordById($tableName, $id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, $distinct=false){
-            $columnsToSelect = $this->buildColumns($columnsToSelect);
+		function getRecordById($tableName, $id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, 
+								$distinct=false, $aliasList=null){
+            $columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
 			$sql = "SELECT". ($distinct ? " DISTINCT" : "") ." $columnsToSelect FROM $tableName where $idName = ? ";
 
 			$statement = $this->dbConn->prepare($sql);
