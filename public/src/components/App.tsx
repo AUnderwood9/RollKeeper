@@ -2,6 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps, BrowserRouter, Router, Switch, Route } from 'react-router-dom';
 import { History, Location } from "history";
 
+import CalendarContainer from "./CalendarPage/CalendarContainer";
 import MonthContainer from "./MonthContainer";
 import LandingPageContainer from "./LandingPage/LandingPageContainer";
 
