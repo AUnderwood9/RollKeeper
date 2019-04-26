@@ -17,8 +17,8 @@
 			return $this->dao->getRecordById($this->secondaryTableName, $id, $columnsToSelect, $idName, $resultType);
 		}
 
-		function getRecordSetWhere($columnsAndData, $columnsToSelect=["*"], $resultType=ResultSetTypeEnum::SingleResultSet){
-			return $this->dao->getRecordsWhere($this->tableName, $columnsAndData , $columnsToSelect, $resultType);
+		function getRecordSetWhere($columnsAndData, $columnsToSelect=["*"], $resultType=ResultSetTypeEnum::SingleResultSet, $aliasList=NULL){
+			return $this->dao->getRecordsWhere($this->tableName, $columnsAndData , $columnsToSelect, $resultType, $aliasList);
 		}
 
 		function getDbConnection(){

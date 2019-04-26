@@ -12,7 +12,7 @@ import * as React from 'react';
 // }
 
 interface Props {
-	clickEvent(): {};
+	clickEvent(): void;
 }
 
 interface State {

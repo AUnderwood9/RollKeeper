@@ -1,6 +1,9 @@
 import * as React from 'react';
 import DayInput from "./dayInput";
 import AttendanceModalContainer from "./AttendanceModalContainer";
+import { StaticContext, RouteComponentProps, match } from 'react-router';
+
+import { makeFetchPost } from "../serviceTools";
 
 // interface Props {}
 // interface DayInputProps {
@@ -9,31 +12,57 @@ import AttendanceModalContainer from "./AttendanceModalContainer";
 // 	currentDate: number;
 // }
 
-interface Props {
+interface myParms{
+	month: string;
+	year: string;
+}
+
+interface Props{
 	currentMonth: number;
 	currentYear: number;
 	currentDate: number;
+	courseId: number;
+	routeMatch: match<myParms>;
 }
 
 interface State {
 	currentMonth: number;
 	currentMonthYear: number;
 	numOfDays: number;
+	attendanceList: {}[];
 }
 
 class MonthContainer extends React.Component<Props, State>{
 	constructor(props: Props){
 		super(props);
+
+		console.log(props.routeMatch.params);
 		
-		const monthToSet: number = props.hasOwnProperty('currentMonth') ? props.currentMonth : parseInt(new Date().toLocaleDateString('en-US', {month: "numeric"}));
-		const yearToSet: number = props.hasOwnProperty('currentYear') ? props.currentYear : parseInt(new Date().toLocaleDateString('en-US', {year: "numeric"}));
-		const numOfDaysToSet: number = new Date(yearToSet, monthToSet + 1, 0).getDate(); 
+		const initialDate: Date = new Date(`${props.routeMatch.params.month}-${props.routeMatch.params.year}`);
+		// const monthToSet: number = props.hasOwnProperty('currentMonth') ? props.routeMatch.params.month : parseInt(new Date().toLocaleDateString('en-US', {month: "2-digit"}));
+		// const yearToSet: number = props.hasOwnProperty('currentYear') ? props.routeMatch.params.year : parseInt(new Date().toLocaleDateString('en-US', {year: "numeric"}));
+		const monthToSet: number = parseInt(initialDate.toLocaleDateString('en-US', {month: "2-digit"}));
+		const yearToSet: number = parseInt(initialDate.toLocaleDateString('en-US', {year: "numeric"}));
+		const numOfDaysToSet: number = new Date(yearToSet, monthToSet, 0).getDate(); 
 		
 		this.state = {
 			currentMonth: monthToSet,
 			currentMonthYear: yearToSet,
-			numOfDays: numOfDaysToSet
+			numOfDays: numOfDaysToSet,
+			attendanceList: []
 		}
+
+		console.log(this.state);
+	}
+
+	
+	async componentDidMount(){
+		const endpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+		console.log(endpoint);
+		let response = await fetch(endpoint);
+		let responseObj = await response.json();
+
+		console.log(responseObj);
 	}
 
 	toggleModal(): void{
@@ -186,17 +215,17 @@ class MonthContainer extends React.Component<Props, State>{
 
 	render(): JSX.Element {
 		// return <div>{this.state.count}</div>;
-		let dayElementList = this.buildDayElements();
 
 		return (
 			<div>
 				<AttendanceModalContainer
 					clickEvent={this.toggleModal}
 				/>
-				{dayElementList}
+				{this.buildDayElements()}
 			</div>
 		);
 	}
 }
 
-export default MonthContainer;
+// Workaround to prevent type erros on import
+export default MonthContainer as any;

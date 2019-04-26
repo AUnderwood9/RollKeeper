@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link } from "react-router-dom"
 import CourseListCheckbox from "./courseListCheckbox";
 import CreateCourseModal from "./createCourseModal";
 import CreatePersonModal from "./createPersonModal";
@@ -74,7 +75,10 @@ class LandingPageContainer extends React.Component<Props, State>{
 						className="landingPageModalButton"
 						onClick={toggleModal.bind(this, "create-courses-modal-container")}
 					>Add Courses</button>
-					<a href="#">Go to Attendance Calendar</a>
+					<Link to={{
+						pathname: "/calendar",
+						state: { courseId: this.state.currentCourseId }
+					}}>Go to Attendance Calendar</Link>
 					<button 
 						className="landingPageModalButton"
 						onClick={toggleModal.bind(this, "create-person-modal-container")}

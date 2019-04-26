@@ -58,10 +58,24 @@
 				while( $element = each( $columnsOrData ) )
 				{
 
-					if($element["key"] == $lastElement)
-						$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."'"; 
-					else
-						$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."' AND ";
+					if($element["key"] == $lastElement){
+						// Check if string contains LIKE
+						if(strpos($element["value"], "LIKE") !== false){
+							$placeholderSet .= $element[ 'key' ].$element["value"]; 
+						}
+						else{
+							$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."'"; 
+						}
+					}
+					else{
+						// Check if string contains LIKE
+						if(strpos($element["value"], "LIKE") !== false){
+							$placeholderSet .= $element[ 'key' ].$element["value"]." AND ";
+						}
+						else{
+							$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."' AND ";
+						}
+					}
 
 				}
 			}

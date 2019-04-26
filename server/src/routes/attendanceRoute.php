@@ -37,6 +37,19 @@
         return $response;
 	});
 
+	$this->get('/attendance/courseMonth/{courseId}/{yearMonth}', function (Request $request, Response $response, array $args) {
+		$attendanceController = new AttendanceController(new DaoManager());
+		$searchSet = ["N_COURSE_ID" => $args["courseId"], "D_CLASS_DATE" => " LIKE '".$args["yearMonth"]."-%'"];
+		
+		$response->getBody()->write(json_encode($attendanceController->getRecordSetWhere($searchSet, 
+																						["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"], 
+																						"MultiResultSet",
+																						["id", "studentId", "courseId", "hasAttended", "classDate"]
+																					)));
+
+        return $response;
+	});
+
 	$this->post('/attendance', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 
