@@ -5,3 +5,4 @@ dist
 vendor
 test.json
 yarn-error.log
+debug.log
