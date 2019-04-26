@@ -20,7 +20,9 @@ class App extends React.Component<{}>{
 			<BrowserRouter>
 				<div className="mainContainer">
 					<Switch>
-						<Route path="/" exact component={LandingPageContainer}/>
+						<Route path="/calendar" exact component={CalendarContainer}/>
+						{/* <Route path="/" exact component={LandingPageContainer}/> */}
+						{/* <Route path="/Attendance" exact component={LandingPageContainer}/> */}
 					</Switch>
 				</div>
 			</BrowserRouter>
