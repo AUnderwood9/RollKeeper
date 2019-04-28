@@ -107,9 +107,9 @@ class MonthContainer extends React.Component<Props, State>{
 		];
 
 		let firstDayIndex = new Date(`${this.state.currentMonth}-1-${this.state.currentMonthYear}`).getDay();
-		let lastDayIndex = new Date(`${this.state.currentMonth}-${this.state.numOfDays+1}-${this.state.currentMonthYear}`).getDay();
+		let lastDayIndex = new Date(`${this.state.currentMonth}-${this.state.numOfDays}-${this.state.currentMonthYear}`).getDay();
 		// console.log(`The first day is ${firstDayIndex}, Date: ${this.state.currentMonth}-1-${this.state.currentMonthYear}
-		// 	the last day is: ${lastDayIndex}, Date: ${this.state.currentMonth}-${this.state.numOfDays+1}-${this.state.currentMonthYear}
+		// 	the last day is: ${lastDayIndex}, Date: ${this.state.currentMonth}-${this.state.numOfDays}-${this.state.currentMonthYear}
 		// `)
 
 		// While we still have some days left on the first week, replace any padding days with actual days
@@ -123,7 +123,7 @@ class MonthContainer extends React.Component<Props, State>{
 			firstDayIndex++;
 		}
 
-		let endingDate = this.state.numOfDays+1;
+		let endingDate = this.state.numOfDays;
 
 		while(lastDayIndex >= 0){
 			lastWeekArray[lastDayIndex] = <DayInput key={`dayInputKey-${this.state.currentMonth}-${endingDate}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
@@ -164,7 +164,7 @@ class MonthContainer extends React.Component<Props, State>{
 							</section>)
 	
 		let {firstWeek, lastWeek, startingDate, endingDate}: { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } = this.buildWeekPadding();
-
+		console.log("Ending date: " + endingDate);
 		let dayElementList: JSX.Element[] = [daysOfWeekElement, firstWeek];
 		for(let x = startingDate; x < endingDate - 1; x++){
 			dayElementList.push(
