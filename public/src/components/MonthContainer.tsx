@@ -4,6 +4,7 @@ import AttendanceModalContainer from "./AttendanceModalContainer";
 import { StaticContext, RouteComponentProps, match } from 'react-router';
 
 import { makeFetchPost } from "../serviceTools";
+import { toggleModal } from "../modalAction";
 
 // interface Props {}
 // interface DayInputProps {
@@ -29,14 +30,15 @@ interface State {
 	currentMonth: number;
 	currentMonthYear: number;
 	numOfDays: number;
+	selectedDate: string;
 	attendanceList: {}[];
+	selectedAttendanceList: {}[];
+	courseRosterList: {}[];
 }
 
 class MonthContainer extends React.Component<Props, State>{
 	constructor(props: Props){
 		super(props);
-
-		console.log(props.routeMatch.params);
 		
 		const initialDate: Date = new Date(`${props.routeMatch.params.month}-${props.routeMatch.params.year}`);
 		// const monthToSet: number = props.hasOwnProperty('currentMonth') ? props.routeMatch.params.month : parseInt(new Date().toLocaleDateString('en-US', {month: "2-digit"}));
@@ -49,40 +51,66 @@ class MonthContainer extends React.Component<Props, State>{
 			currentMonth: monthToSet,
 			currentMonthYear: yearToSet,
 			numOfDays: numOfDaysToSet,
-			attendanceList: []
+			selectedDate: "",
+			attendanceList: [],
+			courseRosterList: [],
+			selectedAttendanceList: []
 		}
 
-		console.log(this.state);
+		// console.log(this.state);
 	}
 
 	
 	async componentDidMount(){
-		const endpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
-		// console.log(endpoint);
-		let response = await fetch(endpoint);
-		let responseObj = await response.json();
+		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.props.courseId}`;
+		// console.log(attendanceEndpoint);
+		// console.log(rosterEndpoint);
 
-		console.log(responseObj);
-		console.log(responseObj.filter(function (element) {
-			return element.classDate == "2019-02-12";
-		  }))
+		const [attendanceResponse, rosterResponse] = await Promise.all([
+			fetch(attendanceEndpoint),
+			fetch(rosterEndpoint)
+		]);
+
+		const [attendanceResponseObj, rosterResponseObj] = await Promise.all([
+			attendanceResponse.json(), 
+			rosterResponse.json()
+		])
+
+		// console.log("Attendance: ");
+		// console.log(attendanceResponseObj);
+
+		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj });
+
+		// console.log(responseObj.filter(function (element) {
+		// 	return element.classDate == "2019-02-12";
+		//   }))
 	}
 
-	toggleModal(): void{
-		// console.log(event.target);
-		let attendanceModal = document.getElementById("attendance-modal-containner");
-		let resultObject: {} = {  };
+	modalHandler = (this.state) = () => {
+		// console.log("Event Type: " + event.target.tagName);
+		if(event.target.tagName === "INPUT"){
+			const selectedDate = new Date(event.target.name.replace("day-input-", ""));
+			const newDateFormat = `${selectedDate.getFullYear()}-${selectedDate.getMonth()+1 > 10 ? selectedDate.getMonth()+1 : `0${selectedDate.getMonth()+1}`}-${selectedDate.getDate() > 10 ? selectedDate.getDate() : `0${selectedDate.getDate()}`}`; 
+			// console.log("INPUT");
+			// console.log("input Date: " + newDateFormat);
+			// console.log(this.state.attendanceList[0].classDate);
+			// console.log(this.state.attendanceList.filter(function (element) {
+			// 	// return element.classDate == "2019-02-12";
+			// 	return element.classDate == newDateFormat;
+			//   }))
+			const selectedAttendanceList = this.state.attendanceList.filter(function (element) {
+				// return element.classDate == "2019-02-12";
+				return element.classDate == newDateFormat;
+			  });
 
-		if( attendanceModal.style.display == "none" || attendanceModal.style.display === "" || attendanceModal.style.display == null){
-			attendanceModal.style.display = "flex";
-			resultObject = { target: event.target }
-		} else if( attendanceModal.style.display == "flex" ){
-			attendanceModal.style.display = "none";
-		} else{
-			attendanceModal.style.display = "none";
+			  toggleModal("attendance-modal-containner");
+			  this.setState({ selectedDate: newDateFormat, 
+				selectedAttendanceList  });
 		}
-
-		return ;
+		else {
+			toggleModal("attendance-modal-containner");
+		}
 	}
 
 	buildWeekPadding(): { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } {
@@ -118,7 +146,7 @@ class MonthContainer extends React.Component<Props, State>{
 			firstWeekArray[firstDayIndex] = <DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 			currentYear={this.state.currentMonthYear}
 			currentDate={startingDate}
-			clickEvent={this.toggleModal}
+			clickEvent={this.modalHandler}
 			/>
 			firstDayIndex++;
 		}
@@ -129,7 +157,7 @@ class MonthContainer extends React.Component<Props, State>{
 			lastWeekArray[lastDayIndex] = <DayInput key={`dayInputKey-${this.state.currentMonth}-${endingDate}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 			currentYear={this.state.currentMonthYear}
 			currentDate={endingDate--}
-			clickEvent={this.toggleModal}
+			clickEvent={this.modalHandler}
 			/>
 			lastDayIndex--;
 		}
@@ -164,7 +192,7 @@ class MonthContainer extends React.Component<Props, State>{
 							</section>)
 	
 		let {firstWeek, lastWeek, startingDate, endingDate}: { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } = this.buildWeekPadding();
-		console.log("Ending date: " + endingDate);
+		
 		let dayElementList: JSX.Element[] = [daysOfWeekElement, firstWeek];
 		for(let x = startingDate; x < endingDate - 1; x++){
 			dayElementList.push(
@@ -172,37 +200,37 @@ class MonthContainer extends React.Component<Props, State>{
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 									<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
 									currentYear={this.state.currentMonthYear}
 									currentDate={startingDate}
-									clickEvent={this.toggleModal}
+									clickEvent={this.modalHandler}
 									/>
 								</section>
 			
@@ -222,7 +250,10 @@ class MonthContainer extends React.Component<Props, State>{
 		return (
 			<div>
 				<AttendanceModalContainer
-					clickEvent={this.toggleModal}
+					selectedDate={this.state.selectedDate}
+					clickEvent={this.modalHandler}
+					attendanceList={this.state.selectedAttendanceList}
+					rosterList={this.state.courseRosterList}
 				/>
 				{this.buildDayElements()}
 			</div>

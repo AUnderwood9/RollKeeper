@@ -9,8 +9,8 @@
 			$this->tableName = $tableName;
 		}
 
-		function getRecordSetById($id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet){
-			return $this->dao->getRecordById($this->tableName, $id, $columnsToSelect, $idName, $resultType);
+		function getRecordSetById($id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, $aliasList=null){
+			return $this->dao->getRecordById($this->tableName, $id, $columnsToSelect, $idName, $resultType, false, $aliasList);
 		}
 		
 		function getSecondaryRecordSetById($id, $secondaryTableName, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet){

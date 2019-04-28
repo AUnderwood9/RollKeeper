@@ -192,7 +192,7 @@
 		 */
 		function getRecordById($tableName, $id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, 
 								$distinct=false, $aliasList=null){
-            $columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
+			$columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
 			$sql = "SELECT". ($distinct ? " DISTINCT" : "") ." $columnsToSelect FROM $tableName where $idName = ? ";
 
 			$statement = $this->dbConn->prepare($sql);

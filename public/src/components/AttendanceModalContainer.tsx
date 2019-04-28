@@ -5,6 +5,8 @@
  */
 import * as React from 'react';
 
+import { toggleModal } from "../modalAction";
+
 // interface Props {
 // 	currentMonth: number;
 // 	currentYear: number;
@@ -12,63 +14,71 @@ import * as React from 'react';
 // }
 
 interface Props {
+	selectedDate: string;
 	clickEvent(): void;
+	attendanceList: {}[];
+	rosterList: {}[];
 }
 
-interface State {
-	studentList: { studentFirstName: String, studentLastName: String, hasAttended: boolean }[]
-}
+const AttendanceModalContainer: React.FunctionComponent<Props> = ({selectedDate, clickEvent, attendanceList, rosterList}) => {
+		// console.log(selectedDate);
+		// console.log("Attendance List: ");
+		// console.log(console.log(attendanceList.filter(function (element) {
+		// 	// return element.classDate == "2019-02-12";
+		// 	return element.classDate == selectedDate;
+		//   })))
+		// console.log(rosterList);
 
-class AttendanceModalContainer extends React.Component<Props, State>{
-	constructor(props: Props){
-		super(props);
+		const buildRosterListElements = (): JSX.Element[] => {
+			let rosterListElements: JSX.Element[] = [];
+			let attendanceCheck;
+			const hasAttendedList = attendanceList.filter((element) => {
+				return element.hasAttended;
+			});
 
-		this.state = {
-			studentList:[
-				{
-					studentFirstName: "Joe",
-					studentLastName: "weaver",
-					hasAttended: true
-				},{
-					studentFirstName: "Joan",
-					studentLastName: "Stilts",
-					hasAttended: true
-				},{
-					studentFirstName: "Kris",
-					studentLastName: "Barns",
-					hasAttended: false
-				}, {
-					studentFirstName: "Maxine",
-					studentLastName: "cartley",
-					hasAttended: false
-				}
-			]
+			// console.log(hasAttendedList);
+			// console.log(rosterList);
+
+			// console.log(attendanceList.filter((element) => {
+			// 	return element.hasAttended;
+			// }))
+
+			rosterList.forEach((element, index) => {
+				attendanceCheck = hasAttendedList.filter((attendanceElement) => {
+					// console.log(`element: ${element.id} attendance: ${attendanceElement.studentId}`);
+					return attendanceElement.studentId == element.id;
+				});
+				rosterListElements.push(
+					<React.Fragment>
+						<label htmlFor={`roster-checkbox-${index}-${element.id}`}>{element.firstName} {element.lastName}</label>
+						{attendanceCheck.length > 0 ? 
+							<input key={`checkbox-${index}`} type="checkbox" name={`checkbox-${element.id}`} id={`checkbox-${element.id}`} checked/> : 
+							<input key={`checkbox-${index}`} type="checkbox" name={`checkbox-${element.id}`} id={`checkbox-${element.id}`}/>
+						}
+					</React.Fragment>
+				);
+			});
+
+			return rosterListElements;
 		}
-	}
 
-	render(){
 		return (
 			<div id="attendance-modal-containner">
 				<div id="modal-body">
-					<p>This is my modal this is my code!</p>
-					<p>This is for fighting, this is for fun!!!</p>
-					<p>I need more text!</p>
-					<p>I need more text!</p>
-					<p>I need more text!</p>
-					<p>I need more text!</p>
-					<p>I need more text!</p>
-					<p>I need more text!</p>
+					<form>
+						{buildRosterListElements()}
+						<input type="submit" value="Submit"/>
+					</form>
 				</div>
 
 				<span 
 					id="modal-close-button"
-					onClick={this.props.clickEvent}
+					onClick={clickEvent}
 					>
 						&times;
 					</span>
 			</div>
 		)
-	}
 
 }
 

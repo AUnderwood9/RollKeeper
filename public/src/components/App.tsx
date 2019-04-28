@@ -29,11 +29,6 @@ class App extends React.PureComponent<Props, State>{
 		}
 	}
 
-	componentDidMount(){
-		console.log(localStorage.getItem("sessionCourseId"));
-		console.log(this.state);
-	}
-
 	render() {
 		return(
 			<BrowserRouter>

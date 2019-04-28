@@ -1,6 +1,6 @@
 const toggleModal: any = (modalId: string) => {
 	// console.log(event.target);
-	console.log(modalId);
+	// console.log(modalId);
 	let attendanceModal = document.getElementById(modalId);
 
 	if( attendanceModal.style.display == "none" || attendanceModal.style.display === "" || attendanceModal.style.display == null){
