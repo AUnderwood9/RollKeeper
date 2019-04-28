@@ -58,11 +58,14 @@ class MonthContainer extends React.Component<Props, State>{
 	
 	async componentDidMount(){
 		const endpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
-		console.log(endpoint);
+		// console.log(endpoint);
 		let response = await fetch(endpoint);
 		let responseObj = await response.json();
 
 		console.log(responseObj);
+		console.log(responseObj.filter(function (element) {
+			return element.classDate == "2019-02-12";
+		  }))
 	}
 
 	toggleModal(): void{

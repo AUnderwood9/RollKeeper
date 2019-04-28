@@ -13,7 +13,6 @@ interface Props {
 }
 
 const monthViewLinks: React.FunctionComponent<Props> = ({ routeMatch }) => {
-	// const monthViewLinks: React.FunctionComponent = ({}) => {
 		console.log(routeMatch);
 	return (
 		<React.Fragment>
