@@ -80,7 +80,8 @@
 		}
 
 		function getCourseTermById($id){
-			return parent::getDbConnection()->getRecordById($this->courseTable, $id, [D_TERM_START, D_TERM_END]);
+			return parent::getDbConnection()->getRecordById($this->tableName, $id, ["D_TERM_START", "D_TERM_END"], 
+															"id", ResultSetTypeEnum::SingleResultSet, false, ["termStart", "termEnd"]);
 		}
 	}
 

@@ -21,6 +21,14 @@
 			return $this->dao->getRecordsWhere($this->tableName, $columnsAndData , $columnsToSelect, $resultType, $aliasList);
 		}
 
+		function insertMultiRequest($columnsAndData , $requestMappings){
+			return $this->dao->multiQueryRequest($this->tableName, $columnsAndData , $requestMappings, "post");
+		}
+
+		function updateMultiRequest($columnsAndData , $requestMappings){
+			return $this->dao->multiQueryRequest($this->tableName, $columnsAndData , $requestMappings, "update");
+		}
+
 		function getDbConnection(){
 			return $this->dao;
 		}
