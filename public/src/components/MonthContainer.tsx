@@ -57,6 +57,7 @@ class MonthContainer extends React.Component<Props, State>{
 			selectedAttendanceList: []
 		}
 
+		// this.updateCalendar.bind(this);
 		// console.log(this.state);
 	}
 
@@ -111,6 +112,22 @@ class MonthContainer extends React.Component<Props, State>{
 		else {
 			toggleModal("attendance-modal-containner");
 		}
+	}
+
+	updateCalendar = (this.state) = async () => {
+		console.log(this.state);
+		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+		// console.log(attendanceEndpoint);
+		// console.log(rosterEndpoint);
+
+		const attendanceResponse = await fetch(attendanceEndpoint);
+
+		const attendanceResponseObj = await attendanceResponse.json()
+
+		// console.log("Attendance: ");
+		// console.log(attendanceResponseObj);
+
+		this.setState({ attendanceList: attendanceResponseObj });
 	}
 
 	buildWeekPadding(): { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } {
@@ -254,6 +271,8 @@ class MonthContainer extends React.Component<Props, State>{
 					clickEvent={this.modalHandler}
 					attendanceList={this.state.selectedAttendanceList}
 					rosterList={this.state.courseRosterList}
+					currentCourseId={this.props.courseId}
+					updateCalendar={this.updateCalendar}
 				/>
 				{this.buildDayElements()}
 			</div>
