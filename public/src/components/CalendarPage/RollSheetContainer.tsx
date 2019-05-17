@@ -104,7 +104,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			return element.getDay() == 1 || element.getDay() == 2 || element.getDay() == 4;
 			});
 
-		console.log(tempDateArray);
+		// console.log(tempDateArray);
 
 		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray });
 	}
@@ -142,6 +142,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		headerDateSet.push(<th className="rollSheetCell">Names</th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
+			// console.log(this.state.courseDays[i]);
 			headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
 		}
 
@@ -149,15 +150,33 @@ class RollSheetContainer extends React.Component<Props, State>{
 		tableHeaders.push(<tr>{headerDaySet}</tr>);
 		tableHeaders.push(<tr>{headerDateSet}</tr>); 
 
+		// console.log(this.state.attendanceList);
+		// console.log(this.state.courseRosterList);
 		// let attendanceSetTemp: JSX.Element[] = [];
 		let attendanceBodySet: JSX.Element[] = [];
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
-			console.log(this.state.courseRosterList[j]);
+			// console.log(this.state.courseRosterList[j]);
 			for(let i = 0; i < this.state.courseDays.length; i++){
+				let currentCourseDate = this.state.courseDays[i].getDate() < 10 ? "0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
+				let currentCourseMonth = this.state.courseDays[i].getMonth()+1 < 10 ? "0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
+				// let currentCourseMonth = this.state.courseDays[i].getMonth()+1;
+				let currentDateCheckBoxDate = `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
+				// let currentDateCheckBoxDate = this.state.courseDays[i].toISOString().substr(0, 10);
+
+				let attendanceCheck = this.state.attendanceList.find((attendanceElement) => {
+					return attendanceElement.studentId == this.state.courseRosterList[j].id &&
+					attendanceElement.classDate == currentDateCheckBoxDate;
+					// return attendanceElement.studentId == this.state.courseRosterList[j].id;
+				});
+
+				// console.log(currentDateCheckBoxDate);
+
+				let isChecked = attendanceCheck == undefined ? false : true;
+				
 				attendanceBodySet.push(
 					<td className="rollSheetCell">
-						<input type="checkbox" name="" 
-							id={`student-${this.state.courseRosterList[j].id}-date-${this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}`}/>
+						<input type="checkbox" name="" checked={isChecked}
+							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}/>
 					</td>
 				)
 			}
