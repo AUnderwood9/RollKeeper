@@ -37,6 +37,7 @@
         return $response;
 	});
 
+	// Get attendance by course id containing year and month
 	$this->get('/attendance/courseMonth/{courseId}/{yearMonth}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 		$searchSet = ["N_COURSE_ID" => $args["courseId"], "D_CLASS_DATE" => " LIKE '".$args["yearMonth"]."-%'"];

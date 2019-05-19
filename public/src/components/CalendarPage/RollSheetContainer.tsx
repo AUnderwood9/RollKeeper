@@ -2,6 +2,7 @@ import * as React from 'react';
 // import DayInput from "./dayInput";
 // import AttendanceModalContainer from "./AttendanceModalContainer";
 import { StaticContext, RouteComponentProps, match } from 'react-router';
+import { makeFetchPost } from '../../serviceTools';
 
 // import { makeFetchPost } from "../serviceTools";
 // import { toggleModal } from "../modalAction";
@@ -30,11 +31,13 @@ interface State {
 	currentMonth: number;
 	currentMonthYear: number;
 	numOfDays: number;
-	selectedDate: string;
 	attendanceList: {}[];
 	selectedAttendanceList: {}[];
 	courseRosterList: {}[];
 	courseDays: Date[];
+	freshRosterAttendanceList: {}[];
+	updateRosterAttendanceList: {}[];
+	formSubmitted: boolean
 }
 
 class RollSheetContainer extends React.Component<Props, State>{
@@ -52,11 +55,13 @@ class RollSheetContainer extends React.Component<Props, State>{
 			currentMonth: monthToSet,
 			currentMonthYear: yearToSet,
 			numOfDays: numOfDaysToSet,
-			selectedDate: "",
+			formSubmitted: false,
 			attendanceList: [],
 			courseRosterList: [],
 			selectedAttendanceList: [],
-			courseDays: []
+			courseDays: [],
+			freshRosterAttendanceList: [],
+			updateRosterAttendanceList: []
 		}
 
 		// this.updateCalendar.bind(this);
@@ -65,6 +70,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 	
 	async componentDidMount(){
+		console.log("Mounting");
 		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
 		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.props.courseId}`;
 		const courseTermEndpoint = `http://localhost/rollKeeper/api/course/${this.props.courseId}/term`
@@ -81,7 +87,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 			courseTermResponse.json()
 		]);
 
-		console.log(courseTermResponseObj);
+		// console.log(courseTermResponseObj);
+		console.log(attendanceResponseObj);
 
 		Date.prototype.addDays = function(days) {
 			var dat = new Date(this.valueOf())
@@ -107,6 +114,20 @@ class RollSheetContainer extends React.Component<Props, State>{
 		// console.log(tempDateArray);
 
 		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray });
+	}
+
+	async componentDidUpdate(){
+		if(this.state.formSubmitted){
+			console.log("Updating");
+			const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+			const attendanceResponse = await fetch(attendanceEndpoint);
+			const attendanceResponseObj = await attendanceResponse.json();
+
+			this.setState({ formSubmitted: false, attendanceList: attendanceResponseObj });
+		}
+
+		console.log(this.state.attendanceList);
+
 	}
 
 	buildTable(StartingIndex: number): JSX.Element[]{
@@ -165,7 +186,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 				let attendanceCheck = this.state.attendanceList.find((attendanceElement) => {
 					return attendanceElement.studentId == this.state.courseRosterList[j].id &&
-					attendanceElement.classDate == currentDateCheckBoxDate;
+					attendanceElement.classDate == currentDateCheckBoxDate &&
+					attendanceElement.hasAttended == true;
 					// return attendanceElement.studentId == this.state.courseRosterList[j].id;
 				});
 
@@ -175,8 +197,21 @@ class RollSheetContainer extends React.Component<Props, State>{
 				
 				attendanceBodySet.push(
 					<td className="rollSheetCell">
-						<input type="checkbox" name="" checked={isChecked}
-							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}/>
+						{
+							isChecked ? 
+							<input type="checkbox" name="" defaultChecked value={this.state.courseRosterList[j].id}
+							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+							onClick={this.handleCheckboxClick}
+							/> : 
+							<input type="checkbox" name="" value={this.state.courseRosterList[j].id}
+							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+							onClick={this.handleCheckboxClick}
+							/>
+						}
+						{/* <input type="checkbox" name="" value={this.state.courseRosterList[j].id}
+							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+							onClick={this.handleCheckboxClick}
+							/> */}
 					</td>
 				)
 			}
@@ -190,178 +225,122 @@ class RollSheetContainer extends React.Component<Props, State>{
 		return [...tableHeaders, ...tableBodySet];
 	}
 
-	// modalHandler = (this.state) = () => {
-	// 	if(event.target.tagName === "INPUT"){
-	// 		const selectedDate = new Date(event.target.name.replace("day-input-", ""));
-	// 		const newDateFormat = `${selectedDate.getFullYear()}-${selectedDate.getMonth()+1 > 10 ? selectedDate.getMonth()+1 : `0${selectedDate.getMonth()+1}`}-${selectedDate.getDate() > 10 ? selectedDate.getDate() : `0${selectedDate.getDate()}`}`; 
-	// 		const selectedAttendanceList = this.state.attendanceList.filter(function (element) {
-	// 			return element.classDate == newDateFormat;
-	// 		  });
+	handleCheckboxClick = (this.state) = () => {
 
-	// 		  toggleModal("attendance-modal-containner");
-	// 		  this.setState({ selectedDate: newDateFormat, 
-	// 			selectedAttendanceList  });
-	// 	}
-	// 	else {
-	// 		toggleModal("attendance-modal-containner");
-	// 	}
-	// }
+		let currentAttendanceObj = null;
+		let currentSelectedDate = event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0];
 
-	// updateCalendar = (this.state) = async () => {
-	// 	console.log(this.state);
-	// 	const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+		currentAttendanceObj = this.state.attendanceList.find((attendanceElement) => {
+			// console.log(`ID: ${event.target.value} elementID:  ${attendanceElement.studentId} date: ${currentSelectedDate} elementDate: ${attendanceElement.courseDate}`)
+			return attendanceElement.studentId == event.target.value &&
+			attendanceElement.classDate == currentSelectedDate;
+		});
 
-	// 	const attendanceResponse = await fetch(attendanceEndpoint);
-
-	// 	const attendanceResponseObj = await attendanceResponse.json()
-
-	// 	this.setState({ attendanceList: attendanceResponseObj });
-	// }
-
-	// buildWeekPadding(): { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } {
-	// 	let firstWeekArray: JSX.Element[] = [
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-1" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-2" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-3" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-4" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-5" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-6" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-7" disabled/>
-	// 	];
-
-	// 	let lastWeekArray: JSX.Element[] = [
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-8" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-9" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-10" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-11" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-12" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-13" disabled/>,
-	// 		<input className="inputCell paddingDay" type="text" name="padding-day-14" disabled/>
-	// 	];
-
-	// 	let firstDayIndex = new Date(`${this.state.currentMonth}-1-${this.state.currentMonthYear}`).getDay();
-	// 	let lastDayIndex = new Date(`${this.state.currentMonth}-${this.state.numOfDays}-${this.state.currentMonthYear}`).getDay();
-	// 	// console.log(`The first day is ${firstDayIndex}, Date: ${this.state.currentMonth}-1-${this.state.currentMonthYear}
-	// 	// 	the last day is: ${lastDayIndex}, Date: ${this.state.currentMonth}-${this.state.numOfDays}-${this.state.currentMonthYear}
-	// 	// `)
-
-	// 	// While we still have some days left on the first week, replace any padding days with actual days
-	// 	let startingDate = 0;
-	// 	while(firstDayIndex < firstWeekArray.length){
-	// 		firstWeekArray[firstDayIndex] = <DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 		currentYear={this.state.currentMonthYear}
-	// 		currentDate={startingDate}
-	// 		clickEvent={this.modalHandler}
-	// 		/>
-	// 		firstDayIndex++;
-	// 	}
-
-	// 	let endingDate = this.state.numOfDays;
-
-	// 	while(lastDayIndex >= 0){
-	// 		lastWeekArray[lastDayIndex] = <DayInput key={`dayInputKey-${this.state.currentMonth}-${endingDate}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 		currentYear={this.state.currentMonthYear}
-	// 		currentDate={endingDate--}
-	// 		clickEvent={this.modalHandler}
-	// 		/>
-	// 		lastDayIndex--;
-	// 	}
-
-	// 	// console.log(firstWeekArray);
-
-	// 	let firstWeek: JSX.Element = (
-	// 		<section className="firstWeekRow">
-	// 			{[...firstWeekArray]}
-	// 		</section>
-	// 	);
-
-	// 	let lastWeek: JSX.Element = (
-	// 		<section className="lastWeekRow">
-	// 			{[...lastWeekArray]}
-	// 		</section>
-	// 	);
-
-	// 	return {firstWeek, lastWeek, startingDate, endingDate};
-	// }
-
-	// buildDayElements(): JSX.Element[] {
-	// 	const daysOfWeekElement: JSX.Element = (
-	// 						<section className="daysOfWeekRow">
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Sunday" disabled/> 
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Monday" disabled/>
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Tuesday" disabled/>
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Wednsday" disabled/>
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Thursday" disabled/>
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Friday" disabled/>
-	// 							<input className="dayOfMonthCell inputCell" placeholder="Saturday" disabled/>
-	// 						</section>)
-	
-	// 	let {firstWeek, lastWeek, startingDate, endingDate}: { firstWeek: JSX.Element, lastWeek: JSX.Element, startingDate: number ,endingDate: number } = this.buildWeekPadding();
+		// console.log(event.target.id);
+		// console.log(event.target.value);
+		// console.log(currentSelectedDate);
+		// console.log(event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0]);
+		// console.log(currentAttendanceObj);
+		// console.log(this.state.attendanceList);
+		if(currentAttendanceObj != undefined && currentAttendanceObj != null){
+			currentAttendanceObj.hasAttended = event.target.checked;
+			let tempAttendanceList = this.state.updateRosterAttendanceList;
+			let currentTempAttendanceObj = tempAttendanceList.find((element) => {
+				return element.studentId == currentAttendanceObj.studentId;
+			});
+			if(currentTempAttendanceObj != undefined && currentTempAttendanceObj != null){
 		
-	// 	let dayElementList: JSX.Element[] = [daysOfWeekElement, firstWeek];
-	// 	for(let x = startingDate; x < endingDate - 1; x++){
-	// 		dayElementList.push(
-	// 						<section>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 								<DayInput key={`dayInputKey-${this.state.currentMonth}-${startingDate++}-${this.state.currentMonthYear}`} currentMonth={this.state.currentMonth}
-	// 								currentYear={this.state.currentMonthYear}
-	// 								currentDate={startingDate}
-	// 								clickEvent={this.modalHandler}
-	// 								/>
-	// 							</section>
-			
-	// 		)
+				const currentAttendanceIndex = tempAttendanceList.findIndex((element) => {
+					return element.studentId == currentAttendanceObj.studentId;
+				});
 
-	// 		x = startingDate;
-	// 	}
+				if(currentAttendanceIndex > -1){
+					tempAttendanceList.splice(currentAttendanceIndex, 1);
+				}
+				tempAttendanceList.push(currentAttendanceObj);
+				// setUpdateRosterAttendanceList([...tempAttendanceList]);
+				this.setState({ updateRosterAttendanceList: tempAttendanceList })
+			}
+			else{
+				this.setState({ updateRosterAttendanceList: [...this.state.updateRosterAttendanceList, currentAttendanceObj] })
+				// setUpdateRosterAttendanceList([...updateRosterAttendanceList, currentAttendanceObj]);
+			}
+		} else {
+			console.log("New");
+			let tempAttendanceList = this.state.freshRosterAttendanceList;
+			currentAttendanceObj = {
+				studentId: event.target.value,
+				courseId: this.props.courseId,
+				hasAttended: event.target.checked,
+				classDate: currentSelectedDate
+			}
+			if(tempAttendanceList.length > 0){
+				const currentAttendanceIndex = tempAttendanceList.findIndex((element) => {
+					return element.studentId == currentAttendanceObj.studentId;
+				});
+				
+				if(currentAttendanceIndex > -1){
+					tempAttendanceList.splice(currentAttendanceIndex, 1);
+				}
+				tempAttendanceList.push(currentAttendanceObj);
+				// setFreshRosterAttendanceList([...tempAttendanceList]);
+				this.setState({ freshRosterAttendanceList: tempAttendanceList });
+			}
+			else {
+				currentAttendanceObj = {
+					studentId: event.target.value,
+					courseId: this.props.courseId,
+					hasAttended: event.target.checked,
+					classDate: currentSelectedDate
+				}
 
-	// 	dayElementList.push(lastWeek);
+				// setFreshRosterAttendanceList([...freshRosterAttendanceList, currentAttendanceObj]);
+				this.setState({freshRosterAttendanceList: [...this.state.freshRosterAttendanceList, currentAttendanceObj]});
+			}
+		}
+	}
 
-	// 	return dayElementList;
-	// }
+	submitAttendanceForm = (this.state) = async () => {
+		event.preventDefault();
+		// console.log(event);
+		// console.log("New Roster")
+		// console.log(this.state.freshRosterAttendanceList)
+		// console.log("Old Roster")
+		// console.log(this.state.updateRosterAttendanceList)
+
+		const [createResponse, updateResponse] = await Promise.all([
+			makeFetchPost("/attendance/multi", this.state.freshRosterAttendanceList),
+			makeFetchPost("/attendance/update/multi", this.state.updateRosterAttendanceList)
+		]);
+
+		this.setState({ formSubmitted: true });
+
+		// console.log("Parsing");
+
+		// console.log("Creation");
+		// console.log(createResponse);
+
+		// console.log("Update");
+		// console.log(updateResponse);
+	}
 
 	render(): JSX.Element {
 		// return <div>{this.state.count}</div>;
+		console.log("Rendering");
+		console.log(this.state.freshRosterAttendanceList);
+		console.log(this.state.updateRosterAttendanceList);
 
 		return (
-			<div>
+			<form method="POST" onSubmit={this.submitAttendanceForm}>
 				<table id="roll-sheet-table">
 					<tbody>
 						{/* {console.log(this.state.courseDays)} */}
 						{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
 					</tbody>
 				</table>
+				<input type="submit" value="Submit Attendance"/>
 				{/* {this.buildDayElements()} */}
-			</div>
+			</form>
 		);
 	}
 }
