@@ -1,38 +1,13 @@
 import * as React from 'react';
-// import DayInput from "./dayInput";
-// import AttendanceModalContainer from "./AttendanceModalContainer";
-import { StaticContext, RouteComponentProps, match } from 'react-router';
+
 import { makeFetchPost } from '../../serviceTools';
 
-// import { makeFetchPost } from "../serviceTools";
-// import { toggleModal } from "../modalAction";
-
-// interface Props {}
-// interface DayInputProps {
-// 	currentMonth: number;
-// 	currentYear: number;
-// 	currentDate: number;
-// }
-
-interface myParms{
-	month: string;
-	year: string;
-}
-
 interface Props{
-	currentMonth: number;
-	currentYear: number;
-	currentDate: number;
 	courseId: number;
-	routeMatch: match<myParms>;
 }
 
 interface State {
-	currentMonth: number;
-	currentMonthYear: number;
-	numOfDays: number;
 	attendanceList: {}[];
-	selectedAttendanceList: {}[];
 	courseRosterList: {}[];
 	courseDays: Date[];
 	freshRosterAttendanceList: {}[];
@@ -44,33 +19,18 @@ class RollSheetContainer extends React.Component<Props, State>{
 	constructor(props: Props){
 		super(props);
 		
-		const initialDate: Date = new Date(`${props.routeMatch.params.month}-${props.routeMatch.params.year}`);
-		// const monthToSet: number = props.hasOwnProperty('currentMonth') ? props.routeMatch.params.month : parseInt(new Date().toLocaleDateString('en-US', {month: "2-digit"}));
-		// const yearToSet: number = props.hasOwnProperty('currentYear') ? props.routeMatch.params.year : parseInt(new Date().toLocaleDateString('en-US', {year: "numeric"}));
-		const monthToSet: number = parseInt(initialDate.toLocaleDateString('en-US', {month: "2-digit"}));
-		const yearToSet: number = parseInt(initialDate.toLocaleDateString('en-US', {year: "numeric"}));
-		const numOfDaysToSet: number = new Date(yearToSet, monthToSet, 0).getDate(); 
-		
 		this.state = {
-			currentMonth: monthToSet,
-			currentMonthYear: yearToSet,
-			numOfDays: numOfDaysToSet,
 			formSubmitted: false,
 			attendanceList: [],
 			courseRosterList: [],
-			selectedAttendanceList: [],
 			courseDays: [],
 			freshRosterAttendanceList: [],
 			updateRosterAttendanceList: []
 		}
-
-		// this.updateCalendar.bind(this);
-		// console.log(this.state);
 	}
 
 	
 	async componentDidMount(){
-		console.log("Mounting");
 		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
 		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.props.courseId}`;
 		const courseTermEndpoint = `http://localhost/rollKeeper/api/course/${this.props.courseId}/term`
@@ -86,9 +46,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 			rosterResponse.json(),
 			courseTermResponse.json()
 		]);
-
-		// console.log(courseTermResponseObj);
-		console.log(attendanceResponseObj);
 
 		Date.prototype.addDays = function(days) {
 			var dat = new Date(this.valueOf())
@@ -110,8 +67,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 			.filter((element) => {
 			return element.getDay() == 1 || element.getDay() == 2 || element.getDay() == 4;
 			});
-
-		// console.log(tempDateArray);
 
 		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray });
 	}
@@ -135,9 +90,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 		let headerIndexSet: JSX.Element[] = [];
 		let headerDaySet: JSX.Element[] = [];
 		let headerDateSet: JSX.Element[] = [];
-		// let attendanceBodySet: JSX.Element[] = [];
 		let tableBodySet: JSX.Element[] = [];
-		// let tableBodySet: JSX.Element;
 
 		headerIndexSet.push(<th className="rollSheetCell"></th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
@@ -163,7 +116,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		headerDateSet.push(<th className="rollSheetCell">Names</th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
-			// console.log(this.state.courseDays[i]);
 			headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
 		}
 
@@ -171,27 +123,18 @@ class RollSheetContainer extends React.Component<Props, State>{
 		tableHeaders.push(<tr>{headerDaySet}</tr>);
 		tableHeaders.push(<tr>{headerDateSet}</tr>); 
 
-		// console.log(this.state.attendanceList);
-		// console.log(this.state.courseRosterList);
-		// let attendanceSetTemp: JSX.Element[] = [];
 		let attendanceBodySet: JSX.Element[] = [];
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
-			// console.log(this.state.courseRosterList[j]);
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				let currentCourseDate = this.state.courseDays[i].getDate() < 10 ? "0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
 				let currentCourseMonth = this.state.courseDays[i].getMonth()+1 < 10 ? "0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
-				// let currentCourseMonth = this.state.courseDays[i].getMonth()+1;
 				let currentDateCheckBoxDate = `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
-				// let currentDateCheckBoxDate = this.state.courseDays[i].toISOString().substr(0, 10);
 
 				let attendanceCheck = this.state.attendanceList.find((attendanceElement) => {
 					return attendanceElement.studentId == this.state.courseRosterList[j].id &&
 					attendanceElement.classDate == currentDateCheckBoxDate &&
 					attendanceElement.hasAttended == true;
-					// return attendanceElement.studentId == this.state.courseRosterList[j].id;
 				});
-
-				// console.log(currentDateCheckBoxDate);
 
 				let isChecked = attendanceCheck == undefined ? false : true;
 				
@@ -208,40 +151,26 @@ class RollSheetContainer extends React.Component<Props, State>{
 							onClick={this.handleCheckboxClick}
 							/>
 						}
-						{/* <input type="checkbox" name="" value={this.state.courseRosterList[j].id}
-							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-							onClick={this.handleCheckboxClick}
-							/> */}
 					</td>
 				)
 			}
 			tableBodySet.push((<tr><td className="rollSheetCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
 								</td>{attendanceBodySet.splice(0, attendanceBodySet.length)}</tr>));
-			// attendanceSetTemp
 		}
-
-		// tableBodySet = (<tr>{attendanceBodySet}</tr>)
 
 		return [...tableHeaders, ...tableBodySet];
 	}
 
-	handleCheckboxClick = (this.state) = () => {
+	handleCheckboxClick = () = () => {
 
 		let currentAttendanceObj = null;
 		let currentSelectedDate = event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0];
 
 		currentAttendanceObj = this.state.attendanceList.find((attendanceElement) => {
-			// console.log(`ID: ${event.target.value} elementID:  ${attendanceElement.studentId} date: ${currentSelectedDate} elementDate: ${attendanceElement.courseDate}`)
 			return attendanceElement.studentId == event.target.value &&
 			attendanceElement.classDate == currentSelectedDate;
 		});
 
-		// console.log(event.target.id);
-		// console.log(event.target.value);
-		// console.log(currentSelectedDate);
-		// console.log(event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0]);
-		// console.log(currentAttendanceObj);
-		// console.log(this.state.attendanceList);
 		if(currentAttendanceObj != undefined && currentAttendanceObj != null){
 			currentAttendanceObj.hasAttended = event.target.checked;
 			let tempAttendanceList = this.state.updateRosterAttendanceList;
@@ -258,15 +187,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 					tempAttendanceList.splice(currentAttendanceIndex, 1);
 				}
 				tempAttendanceList.push(currentAttendanceObj);
-				// setUpdateRosterAttendanceList([...tempAttendanceList]);
 				this.setState({ updateRosterAttendanceList: tempAttendanceList })
 			}
 			else{
 				this.setState({ updateRosterAttendanceList: [...this.state.updateRosterAttendanceList, currentAttendanceObj] })
-				// setUpdateRosterAttendanceList([...updateRosterAttendanceList, currentAttendanceObj]);
 			}
 		} else {
-			console.log("New");
 			let tempAttendanceList = this.state.freshRosterAttendanceList;
 			currentAttendanceObj = {
 				studentId: event.target.value,
@@ -283,7 +209,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 					tempAttendanceList.splice(currentAttendanceIndex, 1);
 				}
 				tempAttendanceList.push(currentAttendanceObj);
-				// setFreshRosterAttendanceList([...tempAttendanceList]);
+
 				this.setState({ freshRosterAttendanceList: tempAttendanceList });
 			}
 			else {
@@ -294,19 +220,13 @@ class RollSheetContainer extends React.Component<Props, State>{
 					classDate: currentSelectedDate
 				}
 
-				// setFreshRosterAttendanceList([...freshRosterAttendanceList, currentAttendanceObj]);
 				this.setState({freshRosterAttendanceList: [...this.state.freshRosterAttendanceList, currentAttendanceObj]});
 			}
 		}
 	}
 
-	submitAttendanceForm = (this.state) = async () => {
+	submitAttendanceForm = () = async () => {
 		event.preventDefault();
-		// console.log(event);
-		// console.log("New Roster")
-		// console.log(this.state.freshRosterAttendanceList)
-		// console.log("Old Roster")
-		// console.log(this.state.updateRosterAttendanceList)
 
 		const [createResponse, updateResponse] = await Promise.all([
 			makeFetchPost("/attendance/multi", this.state.freshRosterAttendanceList),
@@ -315,31 +235,21 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		this.setState({ formSubmitted: true });
 
-		// console.log("Parsing");
 
-		// console.log("Creation");
-		// console.log(createResponse);
 
-		// console.log("Update");
-		// console.log(updateResponse);
 	}
 
 	render(): JSX.Element {
-		// return <div>{this.state.count}</div>;
-		console.log("Rendering");
-		console.log(this.state.freshRosterAttendanceList);
-		console.log(this.state.updateRosterAttendanceList);
 
 		return (
 			<form method="POST" onSubmit={this.submitAttendanceForm}>
 				<table id="roll-sheet-table">
 					<tbody>
-						{/* {console.log(this.state.courseDays)} */}
 						{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
 					</tbody>
 				</table>
 				<input type="submit" value="Submit Attendance"/>
-				{/* {this.buildDayElements()} */}
+
 			</form>
 		);
 	}
