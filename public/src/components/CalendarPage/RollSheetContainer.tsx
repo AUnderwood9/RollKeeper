@@ -19,6 +19,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 	constructor(props: Props){
 		super(props);
 		
+		// localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0
+
 		this.state = {
 			formSubmitted: false,
 			attendanceList: [],
@@ -31,7 +33,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 	
 	async componentDidMount(){
-		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/${this.props.courseId}/course`;
 		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.props.courseId}`;
 		const courseTermEndpoint = `http://localhost/rollKeeper/api/course/${this.props.courseId}/term`
 
@@ -80,8 +82,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 			this.setState({ formSubmitted: false, attendanceList: attendanceResponseObj });
 		}
-
-		console.log(this.state.attendanceList);
 
 	}
 
@@ -161,7 +161,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 		return [...tableHeaders, ...tableBodySet];
 	}
 
-	handleCheckboxClick = () = () => {
+	handleCheckboxClick = (this.state) = () => {
 
 		let currentAttendanceObj = null;
 		let currentSelectedDate = event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0];
@@ -202,9 +202,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 			}
 			if(tempAttendanceList.length > 0){
 				const currentAttendanceIndex = tempAttendanceList.findIndex((element) => {
-					return element.studentId == currentAttendanceObj.studentId;
+					return element.studentId == currentAttendanceObj.studentId && 
+					element.classDate == currentSelectedDate;
 				});
 				
+				console.log(currentAttendanceIndex);
+
 				if(currentAttendanceIndex > -1){
 					tempAttendanceList.splice(currentAttendanceIndex, 1);
 				}
@@ -223,9 +226,11 @@ class RollSheetContainer extends React.Component<Props, State>{
 				this.setState({freshRosterAttendanceList: [...this.state.freshRosterAttendanceList, currentAttendanceObj]});
 			}
 		}
+
+		console.log(this.state.freshRosterAttendanceList);
 	}
 
-	submitAttendanceForm = () = async () => {
+	submitAttendanceForm = (this.state) = async () => {
 		event.preventDefault();
 
 		const [createResponse, updateResponse] = await Promise.all([
@@ -240,6 +245,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 	}
 
 	render(): JSX.Element {
+		// console.log(this.state.attendanceList);
+		// console.log(this.state.courseRosterList);
 
 		return (
 			<form method="POST" onSubmit={this.submitAttendanceForm}>

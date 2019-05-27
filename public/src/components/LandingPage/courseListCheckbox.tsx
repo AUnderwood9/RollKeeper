@@ -21,7 +21,13 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 
 	function handleSelectCoursesEvent(): React.ChangeEvent<HTMLSelectElement>{
 		const courseId = parseInt((document.getElementById("course-listing-dropdown") as HTMLSelectElement).value);
+		const currentCourseObj = courseListing.find((courseElement) => {
+			return courseElement.courseId == courseId.toString();
+		});
+		console.log(currentCourseObj);
 		localStorage.setItem("sessionCourseId", courseId.toString());
+		localStorage.setItem("sessionTermStart", currentCourseObj.termStart.toString());
+		localStorage.setItem("sessionTermEnd", currentCourseObj.termEnd.toString());
 		selectCoursesEvent(courseId);
 		return null;
 	}

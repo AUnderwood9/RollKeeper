@@ -7,13 +7,14 @@ import { toggleModal } from "../../modalAction";
 require('isomorphic-fetch');
 
 interface Props{
-
+	featuresEnabled: []
 }
 
 interface State {
 	courseListing: {courseId: string, courseTitle: string, instructorId: string, termStart: Date, termEnd: Date, classDays: string}[],
 	currentCourseId: number,
-	instructorList: {instructorId: string, firstName: string, lastName: string, contactId: string}[]
+	instructorList: {instructorId: string, firstName: string, lastName: string, contactId: string}[],
+	attendanceViewPathName: string
 }
 
 class LandingPageContainer extends React.Component<Props, State>{
@@ -23,7 +24,8 @@ class LandingPageContainer extends React.Component<Props, State>{
 		this.state = {
 			courseListing: [],
 			currentCourseId: 0,
-			instructorList: []
+			instructorList: [],
+			attendanceViewPathName: "rollsheet"
 		};
 
 		this.selectCourse.bind(this);
@@ -47,6 +49,7 @@ class LandingPageContainer extends React.Component<Props, State>{
 	}
 
 	async componentDidMount(){
+		console.log(this.props.featuresEnabled);
 		const [courseListResponse, instructorListResponses] = await Promise.all([
 			fetch("http://localhost/rollKeeper/api/courses"),
 			fetch("http://localhost/rollKeeper/api/person/all/instructor")
@@ -56,10 +59,19 @@ class LandingPageContainer extends React.Component<Props, State>{
 			courseListResponse.json(), instructorListResponses.json()
 		]);
 
+		let attendanceViewPathName;
+
+		if(this.props.featuresEnabled.length > 0){
+			// check features here
+		} else{
+			attendanceViewPathName = "rollsheet";
+		}
+
 		this.setState({
 			courseListing: courseListObject,
 			instructorList: instructorListObject,
-			currentCourseId: this.state.currentCourseId
+			currentCourseId: this.state.currentCourseId,
+			attendanceViewPathName: attendanceViewPathName
 		});
 	}
 
@@ -68,6 +80,7 @@ class LandingPageContainer extends React.Component<Props, State>{
 	}
 
 	renderButtonList = () =>{
+		console.log(this.state.attendanceViewPathName);
 		if(this.state.currentCourseId > 0){
 			return(
 				<div className="buttonLinkGroup">
@@ -76,9 +89,9 @@ class LandingPageContainer extends React.Component<Props, State>{
 						onClick={toggleModal.bind(this, "create-courses-modal-container")}
 					>Add Courses</button>
 					<Link to={{
-						pathname: "/calendar",
+						pathname: `/${this.state.attendanceViewPathName}`,
 						state: { courseId: this.state.currentCourseId }
-					}}>Go to Attendance Calendar</Link>
+					}}>Go to Attendance</Link>
 					<button 
 						className="landingPageModalButton"
 						onClick={toggleModal.bind(this, "create-person-modal-container")}

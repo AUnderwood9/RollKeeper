@@ -32,12 +32,14 @@
 	$this->get('/attendance/{id}/{type}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 		$searchType = $args["type"] == "course" ? "N_COURSE_ID" : "N_STUDENT_ID";
-		$response->getBody()->write(json_encode($attendanceController->getRecordSetById($args["id"], ["*"], $searchType, "MultiResultSet")));
+		$response->getBody()->write(json_encode($attendanceController->getRecordSetById($args["id"], ["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"],
+																						$searchType, "MultiResultSet",
+																						["id", "studentId", "courseId", "hasAttended", "classDate"])));
 
         return $response;
 	});
 
-	// Get attendance by course id containing year and month
+	// Get attendance by course id, year and month to ensure each attendance set is unique
 	$this->get('/attendance/courseMonth/{courseId}/{yearMonth}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 		$searchSet = ["N_COURSE_ID" => $args["courseId"], "D_CLASS_DATE" => " LIKE '".$args["yearMonth"]."-%'"];

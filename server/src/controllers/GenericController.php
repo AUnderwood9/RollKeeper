@@ -9,6 +9,10 @@
 			$this->tableName = $tableName;
 		}
 
+		function retrieveAllRecords($columnsToSelect=["*"], $aliasList=null){
+			return $this->dao->getAll($this->tableName, $columnsToSelect, $aliasList);
+		}
+
 		function getRecordSetById($id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, $aliasList=null){
 			return $this->dao->getRecordById($this->tableName, $id, $columnsToSelect, $idName, $resultType, false, $aliasList);
 		}
