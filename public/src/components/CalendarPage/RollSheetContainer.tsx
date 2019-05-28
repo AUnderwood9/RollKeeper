@@ -92,13 +92,13 @@ class RollSheetContainer extends React.Component<Props, State>{
 		let headerDateSet: JSX.Element[] = [];
 		let tableBodySet: JSX.Element[] = [];
 
-		headerIndexSet.push(<th className="rollSheetCell"></th>);
+		headerIndexSet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
 			headerIndexSet.push(<th className="rollSheetCell">{i+1}</th>);
 		}
 
 		let dayCount = 0;
-		headerDaySet.push(<th className="rollSheetCell"></th>);
+		headerDaySet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
 			if(dayCount == 0){
 				headerDaySet.push(<th className="rollSheetCell">Monday</th>);
@@ -114,7 +114,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			}
 		}
 
-		headerDateSet.push(<th className="rollSheetCell">Names</th>);
+		headerDateSet.push(<th className="rollSheetCell rollSheetNameCell">Names</th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
 			headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
 		}
@@ -154,8 +154,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 					</td>
 				)
 			}
-			tableBodySet.push((<tr><td className="rollSheetCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
-								</td>{attendanceBodySet.splice(0, attendanceBodySet.length)}</tr>));
+			tableBodySet.push((<tr><th className="rollSheetCell rollSheetNameCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
+								</th>{attendanceBodySet.splice(0, attendanceBodySet.length)}</tr>));
 		}
 
 		return [...tableHeaders, ...tableBodySet];
@@ -250,8 +250,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		return (
 			<form method="POST" onSubmit={this.submitAttendanceForm}>
-				<table id="roll-sheet-table">
-					<tbody>
+				<table id="roll-sheet-table" className="rollSheetContainer">
+					<tbody className="rollSheetBody">
 						{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
 					</tbody>
 				</table>
