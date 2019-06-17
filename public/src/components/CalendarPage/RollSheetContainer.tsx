@@ -65,7 +65,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 		   return dateArray;
 		 }
 
-		 const tempDateArray = getDates(new Date(courseTermResponseObj.termStart), new Date(courseTermResponseObj.termEnd))
+		 const courseStart : Date = new Date(courseTermResponseObj.termStart);
+		 const courseEnd : Date = new Date(courseTermResponseObj.termEnd)
+
+		 // Dates are converted to UTC to ignore daylight savings time.
+		 const tempDateArray = getDates( new Date(Date.UTC(courseStart.getFullYear(), courseStart.getUTCMonth(), courseStart.getUTCDate())) ,
+		 new Date(Date.UTC(courseEnd.getFullYear(), courseEnd.getUTCMonth(), courseEnd.getUTCDate()+1)) )
 			.filter((element) => {
 			return element.getDay() == 1 || element.getDay() == 2 || element.getDay() == 4;
 			});
@@ -157,7 +162,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 			tableBodySet.push((<tr><th className="rollSheetCell rollSheetNameCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
 								</th>{attendanceBodySet.splice(0, attendanceBodySet.length)}</tr>));
 		}
-
 		return [...tableHeaders, ...tableBodySet];
 	}
 
