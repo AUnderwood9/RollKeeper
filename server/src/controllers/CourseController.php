@@ -16,8 +16,7 @@
 		}
 
 		function createCourse($courseTitle, $instructorId, $termStart, $termEnd, $termDays){
-			$termStart = DateTime::createFromFormat('m/d/Y', $termStart)->format('Y-m-d');
-			$termEnd = DateTime::createFromFormat('m/d/Y', $termEnd)->format('Y-m-d');
+			// file_put_contents("debug.log", "content ($courseTitle, $instructorId, $termStart, $termEnd, $termDays, ", FILE_APPEND);
 			try{
 				parent::getDbConnection()->startTransaction();
 				// Verify the instructor exists. If the instructor does not exist then the transaction does not begin and execution is terminated
@@ -81,7 +80,8 @@
 		}
 
 		function getCourseTermById($id){
-			return parent::getDbConnection()->getRecordById($this->courseTable, $id, [D_TERM_START, D_TERM_END]);
+			return parent::getDbConnection()->getRecordById($this->tableName, $id, ["D_TERM_START", "D_TERM_END"], 
+															"id", ResultSetTypeEnum::SingleResultSet, false, ["termStart", "termEnd"]);
 		}
 	}
 

@@ -37,6 +37,7 @@
 		require_once 'server/src/routes/personRoute.php';
 		require_once 'server/src/routes/courseRoute.php';
 		require_once 'server/src/routes/attendanceRoute.php';
+		require_once 'server/src/routes/featureRoute.php';
 	});
 	
 	// Catch-all route to serve a 404 Not Found page if none of the routes match

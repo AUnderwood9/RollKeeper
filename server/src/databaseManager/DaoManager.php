@@ -58,10 +58,24 @@
 				while( $element = each( $columnsOrData ) )
 				{
 
-					if($element["key"] == $lastElement)
-						$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."'"; 
-					else
-						$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."' AND ";
+					if($element["key"] == $lastElement){
+						// Check if string contains LIKE
+						if(strpos($element["value"], "LIKE") !== false){
+							$placeholderSet .= $element[ 'key' ].$element["value"]; 
+						}
+						else{
+							$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."'"; 
+						}
+					}
+					else{
+						// Check if string contains LIKE
+						if(strpos($element["value"], "LIKE") !== false){
+							$placeholderSet .= $element[ 'key' ].$element["value"]." AND ";
+						}
+						else{
+							$placeholderSet .= $element[ 'key' ]." = '".$element["value"]."' AND ";
+						}
+					}
 
 				}
 			}
@@ -121,7 +135,28 @@
                 return $result[0];
             else
                 return $result;
-        }
+		}
+		
+		function buildMappedArrayfromRequest($columnsAndDataArray, $arrayMappings){
+			$newMappedArray = [];
+
+			// print_r($columnsAndDataArray);
+			// file_put_contents('debug.log', print_r($columnsAndDataArray, true));
+
+			for ($i=0; $i < count($columnsAndDataArray); $i++) { 
+				$mappingKeys = array_keys($arrayMappings);
+				for($x=0; $x < count($mappingKeys); $x++){
+					$currentKey = $mappingKeys[$x];
+					$currentKeyToReplace = $arrayMappings[$mappingKeys[$x]];
+					$currentRequestObject[$mappingKeys[$x]] = $columnsAndDataArray[$i][$currentKeyToReplace];
+				}
+				array_push($newMappedArray, $currentRequestObject);
+			}
+
+			// file_put_contents('debug.log', print_r($newMappedArray, true));
+
+			return $newMappedArray;
+		}
 
         /**
          * Used to get all the records in a database.
@@ -142,6 +177,81 @@
 			$statement = null;
 
 			return $result;
+		}
+
+		/**
+		 * 
+		 *
+		 * @param string $tableName
+		 * @param array/object $columnsAndDataArray
+		 * @param array/object $columnToRequestMapping
+		 * @param string $requestsType
+		 * @param object $options
+		 * @return array/object
+		 */
+		/*
+		* 	[
+				"N_COLUMN" => nColumn
+			]
+		*/
+		function multiQueryRequest($tableName, $columnsAndDataArray, $columnToRequestMapping, $requestsType, $options=null){
+			$resultResponse = ["numOfUpdates" => 0, "numOfInserts" => 0];
+			file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
+			file_put_contents('debug.log', "-------------Multi Query------------- $requestsType ", FILE_APPEND | LOCK_EX);
+			try{
+				$this->startTransaction();
+				$formattedQueryArray = $this->buildMappedArrayfromRequest($columnsAndDataArray, $columnToRequestMapping);
+				if($requestsType == "update"){
+					$idName =  keyExists($options, "id") ? $options["id"] : "id";
+					for ($i=0; $i < count($formattedQueryArray); $i++) { 
+						$tempObj = $formattedQueryArray[$i];
+						$currentId = $formattedQueryArray[$i]["id"];
+						unset($tempObj->id);
+						$response = $this->updateRecordById($tableName, $tempObj, $currentId, $idName);
+						// file_put_contents('debug.log', "-------------Updating-------------", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "-------------Updating-------------", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "\n", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', print_r($response, true), FILE_APPEND | LOCK_EX);
+						if($response > 0){
+							$resultResponse["numOfUpdates"]++;
+						}
+						// array_push($resultResponse, $response);
+						// $this->updateRecordById($tableName, $tempObj, $currentId, $idName);
+					}
+				}
+				else if($requestsType == "post"){
+					for ($i=0; $i < count($formattedQueryArray); $i++) { 
+						$tempObj = $formattedQueryArray[$i];
+						if(keyExists($tempObj, "id")){
+							unset($tempObj["id"]);
+						}
+						$response = $this->insertRecord($tableName, $tempObj);
+						// file_put_contents('debug.log', "-------------Posting-------------", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "-------------Posting-------------", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', "\n", FILE_APPEND | LOCK_EX);
+						file_put_contents('debug.log', print_r($response, true), FILE_APPEND | LOCK_EX);
+						if($response["rowsEffected"] > 0){
+							$resultResponse["numOfInserts"]++;
+						}
+						// array_push($resultResponse, $response);
+					}
+				}
+
+				$this->commitTransaction();
+			}
+			catch(Exception $error) {
+				// echo $error;
+				file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
+				file_put_contents('debug.log', "-------------ERROR-------------", FILE_APPEND | LOCK_EX);
+				file_put_contents('debug.log', "\n", FILE_APPEND | LOCK_EX);
+				file_put_contents('debug.log', $error, FILE_APPEND | LOCK_EX);
+				$this->rollbackTransaction();
+			}
+
+			// return $formattedQueryArray;
+			return $resultResponse;
 		}
 
 		/**
@@ -178,7 +288,7 @@
 		 */
 		function getRecordById($tableName, $id, $columnsToSelect=["*"], $idName = "id", $resultType=ResultSetTypeEnum::SingleResultSet, 
 								$distinct=false, $aliasList=null){
-            $columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
+			$columnsToSelect = $this->buildColumns($columnsToSelect, $aliasList);
 			$sql = "SELECT". ($distinct ? " DISTINCT" : "") ." $columnsToSelect FROM $tableName where $idName = ? ";
 
 			$statement = $this->dbConn->prepare($sql);

@@ -30,7 +30,10 @@
 	$this->get('/person/student/course/{id}', function (Request $request, Response $response, array $args) {
 		$personController = new PersonController(new DaoManager());
 
-		$response->getBody()->write(json_encode($personController->getRecordSetById($args["id"], ["id, S_FIRST_NAME, S_LAST_NAME, N_CONTACT_ID"], "N_COURSE_ID", ResultSetTypeEnum::MultiResultSet)));
+		$response->getBody()->write(json_encode($personController->getRecordSetById($args["id"], ["id", "S_FIRST_NAME", "S_LAST_NAME", "N_CONTACT_ID"], 
+																					"N_COURSE_ID", ResultSetTypeEnum::MultiResultSet,
+																					["id", "firstName", "lastName", "contactId"]
+																				)));
 
         return $response;
 	});

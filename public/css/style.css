@@ -18,3 +18,18 @@
 .paddingDay:disabled{
 	background-color: rgb(245,245,245);
 }
+
+#roll-sheet-table{
+	width: 100%;
+	table-layout:fixed;
+}
+
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+	padding: 8px;
+  }
+
+.rollSheetCell{
+	width: 8em;
+}

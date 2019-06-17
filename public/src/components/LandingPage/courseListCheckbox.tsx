@@ -3,12 +3,16 @@ import { element } from 'prop-types';
 
 interface Props{
 	courseListing: {courseId: string, courseTitle: string, instructorId: string, termStart: Date, termEnd: Date, classDays: string}[],
-	selectCoursesEvent: (checkboxValue: number) =>  void
+	selectCoursesEvent: (checkboxValue: number) =>  void,
+	isViewCheckbox: boolean,
+	courseSeletionEvent: (String) => void
 }
 
-const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent}) => {
+const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent, isViewCheckbox, courseSeletionEvent}) => {
 
 	let renderCourseListingElement = () =>{
+		console.log(typeof isViewCheckbox);
+		console.log(isViewCheckbox);
 		let courseListingElements: JSX.Element[] = [];
 		courseListing.forEach((element) => {
 			courseListingElements.push( <option key={`course-dropdown-listing-${element.courseId}`} value={element.courseId}>{element.courseTitle}</option>);
@@ -21,13 +25,32 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 
 	function handleSelectCoursesEvent(): React.ChangeEvent<HTMLSelectElement>{
 		const courseId = parseInt((document.getElementById("course-listing-dropdown") as HTMLSelectElement).value);
-		selectCoursesEvent(courseId);
+		const currentCourseObj = courseListing.find((courseElement) => {
+			return courseElement.courseId == courseId.toString();
+		});
+		console.log("checkboxId" + courseId);
+
+		// Check if a course was actually selected
+		if(courseId == 0 && isViewCheckbox){
+			selectCoursesEvent(courseId);
+		}
+		else if(isViewCheckbox){
+			localStorage.setItem("sessionCourseId", courseId.toString());
+			localStorage.setItem("sessionTermStart", currentCourseObj.termStart.toString());
+			localStorage.setItem("sessionTermEnd", currentCourseObj.termEnd.toString());
+			// Update the parent component's courseId
+			selectCoursesEvent(courseId);
+			console.log(localStorage.getItem("sessionCourseId"));
+		} 
+		else{
+			courseSeletionEvent(courseId);
+		}
+		
 		return null;
 	}
 
 	return(
 		<React.Fragment>
-			<h3>Select Your Course</h3>
 			<select 
 				name="course-listing-dropdown" 
 				id="course-listing-dropdown"
