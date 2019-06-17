@@ -2,17 +2,18 @@ import * as React from "react";
 import { makeFetchPost } from "../../serviceTools";
 
 interface Props{
-	courseId: number,
 	instructorList: {instructorId: string, firstName: string, lastName: string, contactId: string}[],
-	toggleModalEvent:(modalContainerId: string) => void
+	toggleModalEvent:(modalContainerId: string) => void,
+	courseListings
 }
 
-const createCourseModal: React.FunctionComponent<Props> = ({courseId, instructorList, toggleModalEvent}) => {
+const createCourseModal: React.FunctionComponent<Props> = ({instructorList, toggleModalEvent, courseListings}) => {
 	const [courseTitle, setCourseTitle] = React.useState("");
 	const [termStart, setTermStart] = React.useState("");
 	const [termEnd, setTermEnd] = React.useState("");
 	const [termDays, setTermDays] = React.useState("");
 	const [instructorId, setInstructorId] = React.useState("");
+	const [courseId, setCourseId] = React.useState("");
 
 	function modalCloseHandler():void{
 		toggleModalEvent("create-courses-modal-container");
@@ -38,8 +39,8 @@ const createCourseModal: React.FunctionComponent<Props> = ({courseId, instructor
 			instructorId
 		}
 
-		makeFetchPost("/course", requestOjbect)
-		.catch((error) => {console.log(error)});
+		// makeFetchPost("/course", requestOjbect)
+		// .catch((error) => {console.log(error)});
 	}
 
 	let renderInstructorListElement = () =>{
@@ -57,6 +58,7 @@ const createCourseModal: React.FunctionComponent<Props> = ({courseId, instructor
 		<div id="create-courses-modal-container">
 			<div id="modal-body">
 				<form id="create-course-form" onSubmit={handleFormSubmit}>
+					{courseListings()}
 					<input type="text" placeholder="title" value={courseTitle} onChange={(e) => {setCourseTitle(e.target.value)}} required/>
 					<input type="date" name="term-start" id="term-start" onChange={(e) => {setTermStart(e.target.value)}} required/>
 					<input type="date" name="term-end" id="term-end" onChange={(e) => {setTermEnd(e.target.value)}} required/>

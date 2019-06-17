@@ -3,7 +3,7 @@ import * as React from 'react';
 import { makeFetchPost } from '../../serviceTools';
 
 interface Props{
-	courseId: number;
+
 }
 
 interface State {
@@ -12,7 +12,8 @@ interface State {
 	courseDays: Date[];
 	freshRosterAttendanceList: {}[];
 	updateRosterAttendanceList: {}[];
-	formSubmitted: boolean
+	formSubmitted: boolean,
+	currentCourseId: String
 }
 
 class RollSheetContainer extends React.Component<Props, State>{
@@ -20,22 +21,23 @@ class RollSheetContainer extends React.Component<Props, State>{
 		super(props);
 		
 		// localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0
-
+		console.log(localStorage.getItem("sessionCourseId"));
 		this.state = {
 			formSubmitted: false,
 			attendanceList: [],
 			courseRosterList: [],
 			courseDays: [],
 			freshRosterAttendanceList: [],
-			updateRosterAttendanceList: []
+			updateRosterAttendanceList: [],
+			currentCourseId: localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")).toString() : "0"
 		}
 	}
 
 	
 	async componentDidMount(){
-		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/${this.props.courseId}/course`;
-		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.props.courseId}`;
-		const courseTermEndpoint = `http://localhost/rollKeeper/api/course/${this.props.courseId}/term`
+		const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/${this.state.currentCourseId}/course`;
+		const rosterEndpoint = `http://localhost/rollKeeper/api/person/student/course/${this.state.currentCourseId}`;
+		const courseTermEndpoint = `http://localhost/rollKeeper/api/course/${this.state.currentCourseId}/term`
 
 		const [attendanceResponse, rosterResponse, courseTermResponse] = await Promise.all([
 			fetch(attendanceEndpoint),
@@ -81,7 +83,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 	async componentDidUpdate(){
 		if(this.state.formSubmitted){
 			console.log("Updating");
-			const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.props.courseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
+			const attendanceEndpoint = `http://localhost/rollKeeper/api/attendance/courseMonth/${this.state.currentCourseId}/${this.state.currentMonthYear}-${this.state.currentMonth < 10 ? "0" + this.state.currentMonth : this.state.currentMonth}`;
 			const attendanceResponse = await fetch(attendanceEndpoint);
 			const attendanceResponseObj = await attendanceResponse.json();
 
@@ -128,6 +130,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 		tableHeaders.push(<tr>{headerDaySet}</tr>);
 		tableHeaders.push(<tr>{headerDateSet}</tr>); 
 
+		// Create the names of the students along with the respective chekboxes for their attendance.
 		let attendanceBodySet: JSX.Element[] = [];
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
 			for(let i = 0; i < this.state.courseDays.length; i++){
@@ -200,7 +203,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			let tempAttendanceList = this.state.freshRosterAttendanceList;
 			currentAttendanceObj = {
 				studentId: event.target.value,
-				courseId: this.props.courseId,
+				courseId: this.state.currentCourseId,
 				hasAttended: event.target.checked,
 				classDate: currentSelectedDate
 			}
@@ -222,7 +225,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			else {
 				currentAttendanceObj = {
 					studentId: event.target.value,
-					courseId: this.props.courseId,
+					courseId: this.state.currentCourseId,
 					hasAttended: event.target.checked,
 					classDate: currentSelectedDate
 				}

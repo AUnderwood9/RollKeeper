@@ -2,16 +2,16 @@ import * as React from "react";
 import { makeFetchPost } from "../../serviceTools";
 
 interface Props{
-	courseId: number,
 	toggleModalEvent:(modalContainerId: string) => void
 }
 
-const createPersonModal: React.FunctionComponent<Props> = ({courseId, toggleModalEvent})  =>{
+const createPersonModal: React.FunctionComponent<Props> = ({toggleModalEvent})  =>{
 	const [firstName, setFirstName] = React.useState("");
 	const [lastName, setLastName] = React.useState("");
 	const [email, setprimaryEmail] = React.useState("");
 	const [phoneNumber, setprimaryPhone] = React.useState("");
 	const [personType, setpersonType] = React.useState("");
+	const [courseId, setcourseId] = React.useState("");
 
 	function modalCloseHandler():void{
 		toggleModalEvent("create-person-modal-container");

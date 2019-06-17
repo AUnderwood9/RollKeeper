@@ -62,7 +62,6 @@ class App extends React.PureComponent<Props, State>{
 							featuresEnabled={this.state.featureList}
 						/>}/>
 						<Route path="/rollsheet" render={(props) => <RollSheetContainer 
-																		courseId={this.state.currentCourseId} 
 																		routeMatch = {props.match}
 																		/>}/>
 						<Route exact path="/calendar/month/:year" render={ (props) => <MonthViewLinks routeMatch={props.match} /> }/>
