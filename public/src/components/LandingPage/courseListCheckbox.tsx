@@ -4,15 +4,14 @@ import { element } from 'prop-types';
 interface Props{
 	courseListing: {courseId: string, courseTitle: string, instructorId: string, termStart: Date, termEnd: Date, classDays: string}[],
 	selectCoursesEvent: (checkboxValue: number) =>  void,
-	isViewCheckbox: boolean,
-	courseSeletionEvent: (String) => void
+	isViewLinkCheckbox: boolean,
+	courseSelectionEvent: (String) => void
 }
 
-const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent, isViewCheckbox, courseSeletionEvent}) => {
+const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent, isViewLinkCheckbox, courseSelectionEvent}) => {
 
 	let renderCourseListingElement = () =>{
-		console.log(typeof isViewCheckbox);
-		console.log(isViewCheckbox);
+
 		let courseListingElements: JSX.Element[] = [];
 		courseListing.forEach((element) => {
 			courseListingElements.push( <option key={`course-dropdown-listing-${element.courseId}`} value={element.courseId}>{element.courseTitle}</option>);
@@ -24,26 +23,28 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 	}
 
 	function handleSelectCoursesEvent(): React.ChangeEvent<HTMLSelectElement>{
-		const courseId = parseInt((document.getElementById("course-listing-dropdown") as HTMLSelectElement).value);
+		const courseId = parseInt(event.target.value);
 		const currentCourseObj = courseListing.find((courseElement) => {
 			return courseElement.courseId == courseId.toString();
 		});
-		console.log("checkboxId" + courseId);
 
 		// Check if a course was actually selected
-		if(courseId == 0 && isViewCheckbox){
+		if(courseId == 0 && isViewLinkCheckbox){
+			console.log("First");
 			selectCoursesEvent(courseId);
 		}
-		else if(isViewCheckbox){
+		else if(isViewLinkCheckbox){
 			localStorage.setItem("sessionCourseId", courseId.toString());
 			localStorage.setItem("sessionTermStart", currentCourseObj.termStart.toString());
 			localStorage.setItem("sessionTermEnd", currentCourseObj.termEnd.toString());
+
 			// Update the parent component's courseId
 			selectCoursesEvent(courseId);
-			console.log(localStorage.getItem("sessionCourseId"));
 		} 
 		else{
-			courseSeletionEvent(courseId);
+			console.log("Second");
+			console.log(courseSelectionEvent);
+			courseSelectionEvent(courseId);
 		}
 		
 		return null;
@@ -53,7 +54,8 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 		<React.Fragment>
 			<select 
 				name="course-listing-dropdown" 
-				id="course-listing-dropdown"
+				required={isViewLinkCheckbox ? false : true}
+				id={`${isViewLinkCheckbox ? 'view-links-' : 'create-person-'}course-listing-dropdown`}
 				onChange={handleSelectCoursesEvent}
 				>{renderCourseListingElement()}</select>
 		</React.Fragment>

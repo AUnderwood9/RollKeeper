@@ -2,35 +2,48 @@ import * as React from "react";
 import { makeFetchPost } from "../../serviceTools";
 
 interface Props{
-	toggleModalEvent:(modalContainerId: string) => void
+	toggleModalEvent:(modalContainerId: string) => void;
+	courseListings;
 }
 
-const createPersonModal: React.FunctionComponent<Props> = ({toggleModalEvent})  =>{
+const createPersonModal: React.FunctionComponent<Props> = ({toggleModalEvent, courseListings})  =>{
 	const [firstName, setFirstName] = React.useState("");
 	const [lastName, setLastName] = React.useState("");
 	const [email, setprimaryEmail] = React.useState("");
 	const [phoneNumber, setprimaryPhone] = React.useState("");
 	const [personType, setpersonType] = React.useState("");
-	const [courseId, setcourseId] = React.useState("");
+	const [courseId, setCourseId] = React.useState("");
 
 	function modalCloseHandler():void{
 		toggleModalEvent("create-person-modal-container");
 	}
 
+	let selectCourse = (checkboxValue: number) => {
+		console.log("Selected a value " + checkboxValue);
+			setCourseId(checkboxValue.toString());
+	}
+
 	function submitCreatePersonForm():void {
 		event.preventDefault();
+		event.target.checkValidity();
 
-		const requestOjbect = {
-			personType,
-			firstName,
-			lastName,
-			phoneNumber,
-			email,
-			courseId
+		if(event.target.reportValidity()){
+			const requestOjbect = {
+				personType,
+				firstName,
+				lastName,
+				phoneNumber,
+				email,
+				courseId
+			}
+
+			console.log(requestOjbect);
+			// makeFetchPost("/person", requestOjbect)
+			// .catch((error) => {console.log(error)});
 		}
+		else {
 
-		makeFetchPost("/person", requestOjbect)
-		.catch((error) => {console.log(error)});
+		}
 	}
 
 	return(
@@ -40,6 +53,7 @@ const createPersonModal: React.FunctionComponent<Props> = ({toggleModalEvent})  
 					id="create-person-form"
 					onSubmit={submitCreatePersonForm}
 					>
+					{courseListings(false, selectCourse)}
 					<label htmlFor="first-name-input">First Name</label>
 					<input type="text" name="first-name-input" id="first-name-input" value={firstName} onChange={(e) => {setFirstName(e.target.value)}} required/>
 					<label htmlFor="last-name-input">Last Name</label>

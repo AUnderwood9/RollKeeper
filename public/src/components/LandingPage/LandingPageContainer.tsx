@@ -23,7 +23,7 @@ class LandingPageContainer extends React.Component<Props, State>{
 
 		this.state = {
 			courseListing: [],
-			courseSelectedcourseSelected: false,
+			courseSelected: false,
 			instructorList: [],
 			attendanceViewPathName: "rollsheet"
 		};
@@ -32,10 +32,9 @@ class LandingPageContainer extends React.Component<Props, State>{
 	}
 
 	selectCourse = (checkboxValue: number) => {
-		console.log("Selected a value " + checkboxValue);
+		// console.log("Selected a value " + checkboxValue);
 		if(checkboxValue > 0){
-			// console.log("Selected a value " + checkboxValue);
-			// this.setState((prevState) => {return {currentCourseId: checkboxValue}})
+
 			this.setState({
 				courseListing: this.state.courseListing,
 				courseSelected: true
@@ -76,37 +75,14 @@ class LandingPageContainer extends React.Component<Props, State>{
 		});
 	}
 
-	renderCourseListCheckboxElement = () =>{
-		return (this.state.courseListing) ? <CourseListCheckbox courseListing={this.state.courseListing} 
-												selectCoursesEvent={this.selectCourse} 
-												isViewCheckbox={true as boolean} 
-												courseSeletionEvent={null} /> : '';
-	}
-
-	renderViewAttendanceButton = () =>{
-		console.log(this.state.attendanceViewPathName);
-		console.log(localStorage.getItem("sessionCourseId"));
-		if(this.state.courseSelected){
-			return(
-				<div className="buttonLinkGroup">
-					<Link to={{
-						pathname: `/${this.state.attendanceViewPathName}`
-					}}>Go to Attendance</Link>
-				</div>
-			)
-		}
-		else{
-			return '';
-		}
-	}
-
-	renderModals = () => {
-			return(
-				<React.Fragment>
-					<CreateCourseModal instructorList={this.state.instructorList} toggleModalEvent={toggleModal} courseListings={this.renderCourseListCheckboxElement}/>
-					<CreatePersonModal toggleModalEvent={toggleModal}/>
-				</React.Fragment>
-			)
+	renderCourseListCheckboxElement = (isLandingPage = true, listingEvent = null) =>{
+		console.log("Is landing page? " + isLandingPage);
+		console.log(listingEvent);
+		return (this.state.courseListing && this.state.courseListing.length > 0) ? <CourseListCheckbox 
+												courseListing={this.state.courseListing} 
+												selectCoursesEvent={listingEvent != null ? listingEvent : this.selectCourse} 
+												isViewLinkCheckbox={isLandingPage} 
+												courseSelectionEvent={null} /> : '';
 	}
 
 	render(){
@@ -117,13 +93,24 @@ class LandingPageContainer extends React.Component<Props, State>{
 					className="landingPageModalButton"
 					onClick={toggleModal.bind(this, "create-courses-modal-container")}
 				>Add Courses</button>
+
 				{this.renderCourseListCheckboxElement()}
+
 				<button 
 					className="landingPageModalButton"
 					onClick={toggleModal.bind(this, "create-person-modal-container")}
 				>Add Student/Instrctor</button>
-				{this.renderViewAttendanceButton()}
-				{this.renderModals()}
+				
+				{
+					this.state.courseSelected ? <div className="buttonLinkGroup">
+													<Link to={{
+														pathname: `/${this.state.attendanceViewPathName}`
+													}}>Go to Attendance</Link>
+												</div> : <React.Fragment></React.Fragment>
+				}
+				
+				<CreateCourseModal instructorList={this.state.instructorList} toggleModalEvent={toggleModal}/>
+				<CreatePersonModal toggleModalEvent={toggleModal} courseListings={this.renderCourseListCheckboxElement}/>
 			</div>
 		)
 	}

@@ -19,13 +19,7 @@ interface State {
 class App extends React.PureComponent<Props, State>{
 	constructor(props){
 		super(props);
-		
-		// Storing current course id for the application in the window's session for now. Will in the future create cron jobs to maintain sessions
-		// and store/destroy courseIds along with user sessions
 
-		// console.log(localStorage.getItem("sessionCourseId"));
-
-		// const currentCourseId 
 		this.state = {
 			currentCourseId: localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0,
 			featureList: []
@@ -39,18 +33,6 @@ class App extends React.PureComponent<Props, State>{
 		console.log(featureListObj);
 		this.setState({ featureList: featureListObj })
 	}
-	
-	// featureListRoutes(){
-	// 	if(this.state.featureList.length < 1 || this.state.featureList == undefined){
-	// 		return;
-	// 	} else if(this.state.featureList[0].isEnabled){
-	// 		return (
-	// 			<Route path="/rollsheet" render={(props) => <RollSheetContainer 
-	// 				courseId={this.state.currentCourseId} 
-	// 				/>}/>
-	// 		)
-	// 	}
-	// }
 
 	render() {
 		return(
