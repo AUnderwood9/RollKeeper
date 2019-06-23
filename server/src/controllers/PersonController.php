@@ -36,6 +36,7 @@
 
 					if($personType == "instructor"){
 						$createPersonResultSet = parent::getDbConnection()->insertRecord($this->instructorTable, $personInsertSet);
+						parent::getDbConnection()->commitTransaction();
 						$operationStatus = OperationStatusEnum::SUCCESS;
 					}
 					else{

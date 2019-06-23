@@ -38,11 +38,9 @@ const createPersonModal: React.FunctionComponent<Props> = ({toggleModalEvent, co
 			}
 
 			console.log(requestOjbect);
-			// makeFetchPost("/person", requestOjbect)
-			// .catch((error) => {console.log(error)});
-		}
-		else {
-
+			makeFetchPost("/person", requestOjbect)
+			.then((response) => {console.log(response)})
+			.catch((error) => {console.log(error)});
 		}
 	}
 

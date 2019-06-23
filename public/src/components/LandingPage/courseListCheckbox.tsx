@@ -5,7 +5,8 @@ interface Props{
 	courseListing: {courseId: string, courseTitle: string, instructorId: string, termStart: Date, termEnd: Date, classDays: string}[],
 	selectCoursesEvent: (checkboxValue: number) =>  void,
 	isViewLinkCheckbox: boolean,
-	courseSelectionEvent: (String) => void
+	// courseSelectionEvent: () => void
+	courseSelectionEvent: (checkboxValue: number) =>  void
 }
 
 const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent, isViewLinkCheckbox, courseSelectionEvent}) => {
@@ -30,7 +31,6 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 
 		// Check if a course was actually selected
 		if(courseId == 0 && isViewLinkCheckbox){
-			console.log("First");
 			selectCoursesEvent(courseId);
 		}
 		else if(isViewLinkCheckbox){
@@ -42,8 +42,6 @@ const courseListCheckbox: React.SFC<Props> = ({courseListing, selectCoursesEvent
 			selectCoursesEvent(courseId);
 		} 
 		else{
-			console.log("Second");
-			console.log(courseSelectionEvent);
 			courseSelectionEvent(courseId);
 		}
 		

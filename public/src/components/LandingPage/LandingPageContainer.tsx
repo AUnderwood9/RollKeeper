@@ -49,7 +49,6 @@ class LandingPageContainer extends React.Component<Props, State>{
 	}
 
 	async componentDidMount(){
-		console.log(this.props.featuresEnabled);
 		const [courseListResponse, instructorListResponses] = await Promise.all([
 			fetch("http://localhost/rollKeeper/api/courses"),
 			fetch("http://localhost/rollKeeper/api/person/all/instructor")
@@ -76,13 +75,12 @@ class LandingPageContainer extends React.Component<Props, State>{
 	}
 
 	renderCourseListCheckboxElement = (isLandingPage = true, listingEvent = null) =>{
-		console.log("Is landing page? " + isLandingPage);
-		console.log(listingEvent);
+
 		return (this.state.courseListing && this.state.courseListing.length > 0) ? <CourseListCheckbox 
 												courseListing={this.state.courseListing} 
 												selectCoursesEvent={listingEvent != null ? listingEvent : this.selectCourse} 
 												isViewLinkCheckbox={isLandingPage} 
-												courseSelectionEvent={null} /> : '';
+												courseSelectionEvent={listingEvent != null ? listingEvent : null} /> : '';
 	}
 
 	render(){
