@@ -13,6 +13,7 @@ interface State {
 	freshRosterAttendanceList: {}[];
 	updateRosterAttendanceList: {}[];
 	formSubmitted: boolean,
+	displayPrintableView: boolean,
 	currentCourseId: String
 }
 
@@ -24,6 +25,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 		console.log(localStorage.getItem("sessionCourseId"));
 		this.state = {
 			formSubmitted: false,
+			displayPrintableView: false,
 			attendanceList: [],
 			courseRosterList: [],
 			courseDays: [],
@@ -104,31 +106,34 @@ class RollSheetContainer extends React.Component<Props, State>{
 			headerIndexSet.push(<th className="rollSheetCell">{i+1}</th>);
 		}
 
-		let dayCount = 0;
-		headerDaySet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
-		for(let i = 0; i < this.state.courseDays.length; i++){
-			if(dayCount == 0){
-				headerDaySet.push(<th className="rollSheetCell">Monday</th>);
-				dayCount++;
-			}
-			else if(dayCount == 1){
-				headerDaySet.push(<th className="rollSheetCell">Tuesday</th>);
-				dayCount++;
-			}
-			else if(dayCount == 2){
-				headerDaySet.push(<th className="rollSheetCell">Thursday</th>);	
-				dayCount = 0;
-			}
-		}
-
-		headerDateSet.push(<th className="rollSheetCell rollSheetNameCell">Names</th>);
-		for(let i = 0; i < this.state.courseDays.length; i++){
-			headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
-		}
-
 		tableHeaders.push(<tr>{headerIndexSet}</tr>);
-		tableHeaders.push(<tr>{headerDaySet}</tr>);
-		tableHeaders.push(<tr>{headerDateSet}</tr>); 
+
+		if(!this.state.displayPrintableView){
+			let dayCount = 0;
+			headerDaySet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
+			for(let i = 0; i < this.state.courseDays.length; i++){
+				if(dayCount == 0){
+					headerDaySet.push(<th className="rollSheetCell">Monday</th>);
+					dayCount++;
+				}
+				else if(dayCount == 1){
+					headerDaySet.push(<th className="rollSheetCell">Tuesday</th>);
+					dayCount++;
+				}
+				else if(dayCount == 2){
+					headerDaySet.push(<th className="rollSheetCell">Thursday</th>);	
+					dayCount = 0;
+				}
+			}	
+
+			headerDateSet.push(<th className="rollSheetCell rollSheetNameCell">Names</th>);
+			for(let i = 0; i < this.state.courseDays.length; i++){
+				headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
+			}
+
+			tableHeaders.push(<tr>{headerDaySet}</tr>);
+			tableHeaders.push(<tr>{headerDateSet}</tr>); 
+		}
 
 		// Create the names of the students along with the respective chekboxes for their attendance.
 		let attendanceBodySet: JSX.Element[] = [];
@@ -146,24 +151,48 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 				let isChecked = attendanceCheck == undefined ? false : true;
 				
-				attendanceBodySet.push(
-					<td className="rollSheetCell">
-						{
-							isChecked ? 
-							<input type="checkbox" name="" defaultChecked value={this.state.courseRosterList[j].id}
-							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-							onClick={this.handleCheckboxClick}
-							/> : 
-							<input type="checkbox" name="" value={this.state.courseRosterList[j].id}
-							id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-							onClick={this.handleCheckboxClick}
-							/>
-						}
-					</td>
-				)
+				if(!this.state.displayPrintableView){
+					attendanceBodySet.push(
+						<td className="rollSheetCell">
+							{
+								isChecked ? 
+								<input type="checkbox" name="" value={this.state.courseRosterList[j].id}
+								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+								onClick={this.handleCheckboxClick}
+								/>
+								:
+								<input type="checkbox" name="" defaultChecked value={this.state.courseRosterList[j].id}
+								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+								onClick={this.handleCheckboxClick}
+								/> 
+							}
+						</td>
+					)
+				}
+				else{
+					attendanceBodySet.push(
+						<td className="rollSheetCell">
+							{
+								isChecked ? 
+								<span type="checkbox" checked
+								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
+								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
+								>X</span>
+								:
+								<span type="checkbox"
+								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
+								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
+								> </span>
+							}
+						</td>
+					)
+				}
 			}
 			tableBodySet.push((<tr><th className="rollSheetCell rollSheetNameCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
-								</th>{attendanceBodySet.splice(0, attendanceBodySet.length)}</tr>));
+								</th>{attendanceBodySet}</tr>));
+
 		}
 		return [...tableHeaders, ...tableBodySet];
 	}
@@ -237,6 +266,10 @@ class RollSheetContainer extends React.Component<Props, State>{
 		console.log(this.state.freshRosterAttendanceList);
 	}
 
+	handleDisplayChangeClick = (this.state) = () => {
+		this.setState({ displayPrintableView: !this.state.displayPrintableView });
+	}
+
 	submitAttendanceForm = (this.state) = async () => {
 		event.preventDefault();
 
@@ -256,15 +289,19 @@ class RollSheetContainer extends React.Component<Props, State>{
 		// console.log(this.state.courseRosterList);
 
 		return (
-			<form method="POST" onSubmit={this.submitAttendanceForm}>
-				<table id="roll-sheet-table" className="rollSheetContainer">
-					<tbody className="rollSheetBody">
-						{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
-					</tbody>
-				</table>
-				<input type="submit" value="Submit Attendance"/>
+			<React.Fragment>
+				<form method="POST" onSubmit={this.submitAttendanceForm}>
+					<table id="roll-sheet-table" className="rollSheetContainer">
+						<tbody className="rollSheetBody">
+							{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
+						</tbody>
+					</table>
+					{ !this.state.displayPrintableView ? <input type="submit" value="Submit Attendance"/> : <React.Fragment/>}
 
-			</form>
+				</form>
+
+				<button onClick={this.handleDisplayChangeClick}>Display Printable View</button>
+			</React.Fragment>
 		);
 	}
 }
