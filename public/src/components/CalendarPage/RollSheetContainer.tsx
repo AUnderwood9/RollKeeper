@@ -2,6 +2,10 @@ import * as React from 'react';
 
 import { makeFetchPost } from '../../serviceTools';
 
+// const uuidv1 = require('uuid/v1');
+
+import uuidv1 from 'uuid/v1';
+
 interface Props{
 
 }
@@ -101,43 +105,48 @@ class RollSheetContainer extends React.Component<Props, State>{
 		let headerDateSet: JSX.Element[] = [];
 		let tableBodySet: JSX.Element[] = [];
 
-		headerIndexSet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
+		// Attendance cell index
+		headerIndexSet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-name-cell-blank-${uuidv1()}`}></th>);
 		for(let i = 0; i < this.state.courseDays.length; i++){
-			headerIndexSet.push(<th className="rollSheetCell">{i+1}</th>);
+			headerIndexSet.push(<th className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</th>);
 		}
 
-		tableHeaders.push(<tr>{headerIndexSet}</tr>);
+		tableHeaders.push(<tr key={`main-header-index-set-${uuidv1()}`}>{headerIndexSet}</tr>);
 
+		// Attendance Days
 		if(!this.state.displayPrintableView){
 			let dayCount = 0;
-			headerDaySet.push(<th className="rollSheetCell rollSheetNameCell"></th>);
+			headerDaySet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-day-Blank-cell-${uuidv1()}`}></th>);
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				if(dayCount == 0){
-					headerDaySet.push(<th className="rollSheetCell">Monday</th>);
+					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-m-${uuidv1()}`}>Monday</th>);
 					dayCount++;
 				}
 				else if(dayCount == 1){
-					headerDaySet.push(<th className="rollSheetCell">Tuesday</th>);
+					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-t-${uuidv1()}`}>Tuesday</th>);
 					dayCount++;
 				}
 				else if(dayCount == 2){
-					headerDaySet.push(<th className="rollSheetCell">Thursday</th>);	
+					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-th-${uuidv1()}`}>Thursday</th>);	
 					dayCount = 0;
 				}
 			}	
 
-			headerDateSet.push(<th className="rollSheetCell rollSheetNameCell">Names</th>);
+			headerDateSet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-names-header-${uuidv1()}`}>Names</th>);
 			for(let i = 0; i < this.state.courseDays.length; i++){
-				headerDateSet.push(<th className="rollSheetCell">{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}</th>)
+				headerDateSet.push(<th className="rollSheetCell" key={`attendance-date-cell-${uuidv1()}`}>
+										{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}
+									</th>)
 			}
 
-			tableHeaders.push(<tr>{headerDaySet}</tr>);
-			tableHeaders.push(<tr>{headerDateSet}</tr>); 
+			tableHeaders.push(<tr key={`main-header-day-set-${uuidv1()}`}>{headerDaySet}</tr>);
+			tableHeaders.push(<tr key={`main-header-date-set-${uuidv1()}`}>{headerDateSet}</tr>); 
 		}
 
 		// Create the names of the students along with the respective chekboxes for their attendance.
-		let attendanceBodySet: JSX.Element[] = [];
+		// let attendanceBodySet: JSX.Element[] = [];
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
+			let attendanceBodySet: JSX.Element[] = [];
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				let currentCourseDate = this.state.courseDays[i].getDate() < 10 ? "0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
 				let currentCourseMonth = this.state.courseDays[i].getMonth()+1 < 10 ? "0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
@@ -150,48 +159,44 @@ class RollSheetContainer extends React.Component<Props, State>{
 				});
 
 				let isChecked = attendanceCheck == undefined ? false : true;
-				
+				let generalKeyBody = `${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-course-${this.state.currentCourseId}`;
+
 				if(!this.state.displayPrintableView){
 					attendanceBodySet.push(
-						<td className="rollSheetCell">
+						<td className="rollSheetCell" 
+							key={`student-td-${generalKeyBody}`}>
 							{
-								isChecked ? 
-								<input type="checkbox" name="" value={this.state.courseRosterList[j].id}
+								<input type="checkbox" name="" defaultChecked={isChecked ? false : true} value={this.state.courseRosterList[j].id}
 								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+								key={`student-${generalKeyBody}`}
 								onClick={this.handleCheckboxClick}
 								/>
-								:
-								<input type="checkbox" name="" defaultChecked value={this.state.courseRosterList[j].id}
-								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-								onClick={this.handleCheckboxClick}
-								/> 
 							}
 						</td>
 					)
 				}
 				else{
 					attendanceBodySet.push(
-						<td className="rollSheetCell">
-							{
-								isChecked ? 
+						<td className="rollSheetCell"
+							key={`cell-${generalKeyBody}-printable`}>
+							{ 
 								<span type="checkbox" checked
 								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
-								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
-								>X</span>
-								:
-								<span type="checkbox"
-								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
-								key={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-printable`}
-								> </span>
+								key={`student-${generalKeyBody}-printable`}
+								>{isChecked ? "x" : ""}</span>
 							}
 						</td>
 					)
 				}
 			}
-			tableBodySet.push((<tr><th className="rollSheetCell rollSheetNameCell">{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
-								</th>{attendanceBodySet}</tr>));
+			tableBodySet.push((<tr key={`student-header-row-${uuidv1()}`}>
+								<th className="rollSheetCell rollSheetNameCell" 
+									key={`student-header-${uuidv1()}`}
+								>
+									{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
+									</th>
+									{attendanceBodySet}
+								</tr>));
 
 		}
 		return [...tableHeaders, ...tableBodySet];
@@ -285,8 +290,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 	}
 
 	render(): JSX.Element {
-		// console.log(this.state.attendanceList);
-		// console.log(this.state.courseRosterList);
 
 		return (
 			<React.Fragment>
@@ -300,7 +303,9 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 				</form>
 
-				<button onClick={this.handleDisplayChangeClick}>Display Printable View</button>
+				<button onClick={this.handleDisplayChangeClick}>
+					{!this.state.displayPrintableView ? "Display Printable View" : "Display Editable View"}
+				</button>
 			</React.Fragment>
 		);
 	}
