@@ -2,8 +2,6 @@ import * as React from 'react';
 
 import { makeFetchPost } from '../../serviceTools';
 
-// const uuidv1 = require('uuid/v1');
-
 import uuidv1 from 'uuid/v1';
 
 interface Props{
@@ -13,6 +11,7 @@ interface Props{
 interface State {
 	attendanceList: {}[];
 	courseRosterList: {}[];
+	rosterStateList: {}[];
 	courseDays: Date[];
 	freshRosterAttendanceList: {}[];
 	updateRosterAttendanceList: {}[];
@@ -32,6 +31,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			displayPrintableView: false,
 			attendanceList: [],
 			courseRosterList: [],
+			rosterStateList: [],
 			courseDays: [],
 			freshRosterAttendanceList: [],
 			updateRosterAttendanceList: [],
@@ -77,13 +77,52 @@ class RollSheetContainer extends React.Component<Props, State>{
 		 const courseEnd : Date = new Date(courseTermResponseObj.termEnd)
 
 		 // Dates are converted to UTC to ignore daylight savings time.
-		 const tempDateArray = getDates( new Date(Date.UTC(courseStart.getFullYear(), courseStart.getUTCMonth(), courseStart.getUTCDate())) ,
+		 let tempDateArray = getDates( new Date(Date.UTC(courseStart.getFullYear(), courseStart.getUTCMonth(), courseStart.getUTCDate())) ,
 		 new Date(Date.UTC(courseEnd.getFullYear(), courseEnd.getUTCMonth(), courseEnd.getUTCDate()+1)) )
 			.filter((element) => {
 			return element.getDay() == 1 || element.getDay() == 2 || element.getDay() == 4;
 			});
 
-		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray });
+			const dateArray = tempDateArray.map(
+				(item,index) => { 
+					return item.toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"}).replace(/\//g ,"-");
+				});
+
+
+		let rosterStateList = [];
+
+		// rosterStateList = rosterResponseObj.map((value, index) => {
+		// 	let tempDateArray = dateArray.forEach((dateValue, dateIndex) => {
+		// 		return dateValue;
+		// 	})
+		// });
+
+		for (let i = 0; i < rosterResponseObj.length; i++) {
+			for (let j = 0; j < dateArray.length; j++) {
+				// rosterStateList.push(Object.assign(rosterResponseObj[i], dateArray[j]));
+				rosterStateList.push(Object.assign(rosterResponseObj[i], {classDate: dateArray[j]}));
+				// rosterStateList.push(dateArray[j]);
+				
+			}
+			
+		}
+
+		console.log(rosterStateList);
+
+		// const rosterStateList = dateArray.map((value, index) => {
+		// 	let tempStudentData = attendanceResponseObj.find((attendanceElement) => {
+
+		// 		return attendanceElement.classDate == value;
+		// 	});
+
+		// 	return tempStudentData == undefined ? { index: index, modified: false } : tempStudentData;
+
+		// });
+
+		// console.log(attendanceResponseObj);
+		// console.log(rosterStateList);
+
+		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray, rosterStateList });
 	}
 
 	async componentDidUpdate(){

@@ -32,9 +32,14 @@
 	$this->get('/attendance/{id}/{type}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 		$searchType = $args["type"] == "course" ? "N_COURSE_ID" : "N_STUDENT_ID";
-		$response->getBody()->write(json_encode($attendanceController->getRecordSetById($args["id"], ["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"],
+		$resultSet = $attendanceController->getRecordSetById($args["id"], ["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"],
 																						$searchType, "MultiResultSet",
-																						["id", "studentId", "courseId", "hasAttended", "classDate"])));
+																						["id", "studentId", "courseId", "hasAttended", "classDate"]);
+		foreach ($resultSet as &$resultValue) {
+			$resultValue["classDate"] = DateTime::createFromFormat('Y-m-d', $resultValue["classDate"])->format('m-d-Y');
+		}
+		
+		$response->getBody()->write(json_encode($resultSet));
 
         return $response;
 	});
