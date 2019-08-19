@@ -11,7 +11,7 @@ interface Props{
 interface State {
 	attendanceList: {}[];
 	courseRosterList: {}[];
-	rosterStateList: {}[];
+	attendanceStateList: {}[];
 	courseDays: Date[];
 	freshRosterAttendanceList: {}[];
 	updateRosterAttendanceList: {}[];
@@ -24,14 +24,13 @@ class RollSheetContainer extends React.Component<Props, State>{
 	constructor(props: Props){
 		super(props);
 		
-		// localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0
 		console.log(localStorage.getItem("sessionCourseId"));
 		this.state = {
 			formSubmitted: false,
 			displayPrintableView: false,
 			attendanceList: [],
 			courseRosterList: [],
-			rosterStateList: [],
+			attendanceStateList: [],
 			courseDays: [],
 			freshRosterAttendanceList: [],
 			updateRosterAttendanceList: [],
@@ -89,40 +88,35 @@ class RollSheetContainer extends React.Component<Props, State>{
 				});
 
 
-		let rosterStateList = [];
-
-		// rosterStateList = rosterResponseObj.map((value, index) => {
-		// 	let tempDateArray = dateArray.forEach((dateValue, dateIndex) => {
-		// 		return dateValue;
-		// 	})
-		// });
+		let attendanceStateList = [];
 
 		for (let i = 0; i < rosterResponseObj.length; i++) {
 			for (let j = 0; j < dateArray.length; j++) {
-				// rosterStateList.push(Object.assign(rosterResponseObj[i], dateArray[j]));
-				rosterStateList.push(Object.assign(rosterResponseObj[i], {classDate: dateArray[j]}));
-				// rosterStateList.push(dateArray[j]);
+
+				let attendanceCheck = attendanceResponseObj.find((attendanceElement) => {
+					return attendanceElement.studentId == rosterResponseObj[i].id &&
+					attendanceElement.classDate == dateArray[j];
+				});
+
+				attendanceStateList.push(
+					Object.assign(
+						{}, 
+						rosterResponseObj[i], 
+						{classDate: dateArray[j],
+						attendanceRecordExists: attendanceCheck == undefined ? 0 : 1, 
+						hasAttended: attendanceCheck == undefined ? 0 : attendanceCheck.hasAttended,
+						attendanceRecordId: attendanceCheck == undefined ? undefined : attendanceCheck.id
+						}));
 				
 			}
 			
 		}
 
-		console.log(rosterStateList);
-
-		// const rosterStateList = dateArray.map((value, index) => {
-		// 	let tempStudentData = attendanceResponseObj.find((attendanceElement) => {
-
-		// 		return attendanceElement.classDate == value;
-		// 	});
-
-		// 	return tempStudentData == undefined ? { index: index, modified: false } : tempStudentData;
-
-		// });
-
-		// console.log(attendanceResponseObj);
-		// console.log(rosterStateList);
-
-		this.setState({ attendanceList: attendanceResponseObj, courseRosterList: rosterResponseObj, courseDays: tempDateArray, rosterStateList });
+		this.setState({ 
+			attendanceList: attendanceResponseObj, 
+			courseRosterList: rosterResponseObj, 
+			courseDays: tempDateArray, 
+			attendanceStateList });
 	}
 
 	async componentDidUpdate(){
@@ -137,6 +131,79 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 	}
 
+	handleCheckboxClick = (this.state) = () => {
+		const hasStudentAttended = !event.target.checked;
+		let currentSelectedDate = event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0];
+		let { attendanceStateList } = this.state;
+		let currentAttendanceObjIndex = event.target.dataset.stateindex;
+		let currentAttendanceObj = currentAttendanceObj = {
+			id: attendanceStateList[currentAttendanceObjIndex].attendanceRecordId,
+			studentId: event.target.value,
+			courseId: this.state.currentCourseId,
+			hasAttended: hasStudentAttended,
+			classDate: currentSelectedDate
+		};
+
+		let SelectedStudentObj = attendanceStateList[currentAttendanceObjIndex];
+
+		if(SelectedStudentObj.attendanceRecordExists){
+			let tempAttendanceList = this.state.updateRosterAttendanceList;
+
+			let updateRecordIndex = tempAttendanceList.findIndex((item) => {
+				return item.studentId == event.target.value 
+				&& item.classDate == event.target.dataset.date;
+			});
+			
+			// if the update list has this record already remove it to avoid duplicate submissions
+			if(updateRecordIndex != undefined && updateRecordIndex != null && updateRecordIndex != -1){
+				tempAttendanceList.splice(updateRecordIndex, 1);
+			}
+
+			tempAttendanceList.push(currentAttendanceObj);
+			attendanceStateList[currentAttendanceObjIndex].hasAttended = hasStudentAttended;
+			this.setState({ updateRosterAttendanceList: tempAttendanceList, attendanceStateList });
+
+		} else {
+			let tempAttendanceList = this.state.freshRosterAttendanceList;
+
+			let newRecordIndex = tempAttendanceList.findIndex((item) => {
+				return item.studentId == event.target.value 
+				&& item.classDate == event.target.dataset.date;
+			});
+
+			// if the new record list has this record already remove it to avoid duplicate submissions
+			if(newRecordIndex != undefined && newRecordIndex != null && newRecordIndex != -1){
+				tempAttendanceList.splice(newRecordIndex, 1);
+			}
+
+			tempAttendanceList.push(currentAttendanceObj);
+			attendanceStateList[currentAttendanceObjIndex].hasAttended = hasStudentAttended;
+			this.setState({ freshRosterAttendanceList: tempAttendanceList, attendanceStateList });
+		}
+	}
+
+	handleDisplayChangeClick = (this.state) = () => {
+		this.setState({ displayPrintableView: !this.state.displayPrintableView });
+	}
+
+	submitAttendanceForm = (this.state) = async () => {
+		event.preventDefault();
+		let { freshRosterAttendanceList, updateRosterAttendanceList } = this.state;
+
+		const [createResponse, updateResponse] = await Promise.all([
+			makeFetchPost("/attendance/multi", freshRosterAttendanceList),
+			makeFetchPost("/attendance/update/multi", updateRosterAttendanceList)
+		]);
+
+		freshRosterAttendanceList.length = 0;
+		updateRosterAttendanceList.length = 0;
+
+		this.setState({ freshRosterAttendanceList, updateRosterAttendanceList });
+
+
+
+	}
+
 	buildTable(StartingIndex: number): JSX.Element[]{
 		let tableHeaders: JSX.Element[] = [];
 		let headerIndexSet: JSX.Element[] = [];
@@ -146,6 +213,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		// Attendance cell index
 		headerIndexSet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-name-cell-blank-${uuidv1()}`}></th>);
+
 		for(let i = 0; i < this.state.courseDays.length; i++){
 			headerIndexSet.push(<th className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</th>);
 		}
@@ -155,7 +223,9 @@ class RollSheetContainer extends React.Component<Props, State>{
 		// Attendance Days
 		if(!this.state.displayPrintableView){
 			let dayCount = 0;
+
 			headerDaySet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-day-Blank-cell-${uuidv1()}`}></th>);
+
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				if(dayCount == 0){
 					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-m-${uuidv1()}`}>Monday</th>);
@@ -172,6 +242,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			}	
 
 			headerDateSet.push(<th className="rollSheetCell rollSheetNameCell" key={`attendance-names-header-${uuidv1()}`}>Names</th>);
+
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				headerDateSet.push(<th className="rollSheetCell" key={`attendance-date-cell-${uuidv1()}`}>
 										{this.state.courseDays[i].toLocaleDateString("en-US", {year:"numeric", month: "2-digit", day: "2-digit"})}
@@ -183,12 +254,14 @@ class RollSheetContainer extends React.Component<Props, State>{
 		}
 
 		// Create the names of the students along with the respective chekboxes for their attendance.
-		// let attendanceBodySet: JSX.Element[] = [];
+		
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
 			let attendanceBodySet: JSX.Element[] = [];
 			for(let i = 0; i < this.state.courseDays.length; i++){
-				let currentCourseDate = this.state.courseDays[i].getDate() < 10 ? "0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
-				let currentCourseMonth = this.state.courseDays[i].getMonth()+1 < 10 ? "0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
+				let currentCourseDate = this.state.courseDays[i].getDate() < 10 ? 
+					"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
+				let currentCourseMonth = this.state.courseDays[i].getMonth()+1 < 10 ? 
+					"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
 				let currentDateCheckBoxDate = `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
 
 				let attendanceCheck = this.state.attendanceList.find((attendanceElement) => {
@@ -197,19 +270,32 @@ class RollSheetContainer extends React.Component<Props, State>{
 					attendanceElement.hasAttended == true;
 				});
 
-				let isChecked = attendanceCheck == undefined ? false : true;
+				let currentAttendanceObjIndex = 
+					this.state.attendanceStateList.findIndex((item) => {
+						// return item.id == this.state.courseRosterList[j].id && item.classDate == this.state.courseDays[i];
+						return item.id == this.state.courseRosterList[j].id 
+						&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
+					});
+
 				let generalKeyBody = `${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}-course-${this.state.currentCourseId}`;
+				let currentAttendenceRecord = this.state.attendanceStateList[currentAttendanceObjIndex];
+				let isChecked = !currentAttendenceRecord.hasAttended;
 
 				if(!this.state.displayPrintableView){
 					attendanceBodySet.push(
 						<td className="rollSheetCell" 
 							key={`student-td-${generalKeyBody}`}>
 							{
-								<input type="checkbox" name="" defaultChecked={isChecked ? false : true} value={this.state.courseRosterList[j].id}
-								id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
-								key={`student-${generalKeyBody}`}
-								onClick={this.handleCheckboxClick}
-								/>
+								<input type="checkbox" name="attendanceStateList" 
+									defaultChecked={!currentAttendenceRecord.hasAttended} 
+									value={this.state.courseRosterList[j].id}
+									id={`student-${this.state.courseRosterList[j].id}-date-${currentDateCheckBoxDate}`}
+									key={`student-${generalKeyBody}`}
+									onClick={this.handleCheckboxClick}
+									data-date={`${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`}
+									data-stateindex={currentAttendanceObjIndex}
+									data-stateid={currentAttendenceRecord != undefined && currentAttendenceRecord != null ? 
+										currentAttendenceRecord.id : -1} />
 							}
 						</td>
 					)
@@ -239,93 +325,6 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		}
 		return [...tableHeaders, ...tableBodySet];
-	}
-
-	handleCheckboxClick = (this.state) = () => {
-
-		let currentAttendanceObj = null;
-		let currentSelectedDate = event.target.id.match("(\\d{4}-\\d{2}-\\d{2})")[0];
-
-		currentAttendanceObj = this.state.attendanceList.find((attendanceElement) => {
-			return attendanceElement.studentId == event.target.value &&
-			attendanceElement.classDate == currentSelectedDate;
-		});
-
-		if(currentAttendanceObj != undefined && currentAttendanceObj != null){
-			currentAttendanceObj.hasAttended = event.target.checked;
-			let tempAttendanceList = this.state.updateRosterAttendanceList;
-			let currentTempAttendanceObj = tempAttendanceList.find((element) => {
-				return element.studentId == currentAttendanceObj.studentId;
-			});
-			if(currentTempAttendanceObj != undefined && currentTempAttendanceObj != null){
-		
-				const currentAttendanceIndex = tempAttendanceList.findIndex((element) => {
-					return element.studentId == currentAttendanceObj.studentId;
-				});
-
-				if(currentAttendanceIndex > -1){
-					tempAttendanceList.splice(currentAttendanceIndex, 1);
-				}
-				tempAttendanceList.push(currentAttendanceObj);
-				this.setState({ updateRosterAttendanceList: tempAttendanceList })
-			}
-			else{
-				this.setState({ updateRosterAttendanceList: [...this.state.updateRosterAttendanceList, currentAttendanceObj] })
-			}
-		} else {
-			let tempAttendanceList = this.state.freshRosterAttendanceList;
-			currentAttendanceObj = {
-				studentId: event.target.value,
-				courseId: this.state.currentCourseId,
-				hasAttended: event.target.checked,
-				classDate: currentSelectedDate
-			}
-			if(tempAttendanceList.length > 0){
-				const currentAttendanceIndex = tempAttendanceList.findIndex((element) => {
-					return element.studentId == currentAttendanceObj.studentId && 
-					element.classDate == currentSelectedDate;
-				});
-				
-				console.log(currentAttendanceIndex);
-
-				if(currentAttendanceIndex > -1){
-					tempAttendanceList.splice(currentAttendanceIndex, 1);
-				}
-				tempAttendanceList.push(currentAttendanceObj);
-
-				this.setState({ freshRosterAttendanceList: tempAttendanceList });
-			}
-			else {
-				currentAttendanceObj = {
-					studentId: event.target.value,
-					courseId: this.state.currentCourseId,
-					hasAttended: event.target.checked,
-					classDate: currentSelectedDate
-				}
-
-				this.setState({freshRosterAttendanceList: [...this.state.freshRosterAttendanceList, currentAttendanceObj]});
-			}
-		}
-
-		console.log(this.state.freshRosterAttendanceList);
-	}
-
-	handleDisplayChangeClick = (this.state) = () => {
-		this.setState({ displayPrintableView: !this.state.displayPrintableView });
-	}
-
-	submitAttendanceForm = (this.state) = async () => {
-		event.preventDefault();
-
-		const [createResponse, updateResponse] = await Promise.all([
-			makeFetchPost("/attendance/multi", this.state.freshRosterAttendanceList),
-			makeFetchPost("/attendance/update/multi", this.state.updateRosterAttendanceList)
-		]);
-
-		this.setState({ formSubmitted: true });
-
-
-
 	}
 
 	render(): JSX.Element {
