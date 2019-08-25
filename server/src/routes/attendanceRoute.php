@@ -32,9 +32,26 @@
 	$this->get('/attendance/{id}/{type}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 		$searchType = $args["type"] == "course" ? "N_COURSE_ID" : "N_STUDENT_ID";
-		$resultSet = $attendanceController->getRecordSetById($args["id"], ["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"],
-																						$searchType, "MultiResultSet",
-																						["id", "studentId", "courseId", "hasAttended", "classDate"]);
+		$resultSet = $attendanceController->getRecordSetById(
+												$args["id"], 
+												[
+													"id", 
+													"N_STUDENT_ID", 
+													"N_COURSE_ID", 
+													"B_HAS_ATTENDED", 
+													"D_CLASS_DATE"
+												],
+																						
+												$searchType, 
+												"MultiResultSet",
+												[
+													"id", 
+													"studentId", 
+													"courseId", 
+													"hasAttended", 
+													"classDate"
+												]
+											);
 		foreach ($resultSet as &$resultValue) {
 			$resultValue["classDate"] = DateTime::createFromFormat('Y-m-d', $resultValue["classDate"])->format('m-d-Y');
 		}
@@ -47,13 +64,29 @@
 	// Get attendance by course id, year and month to ensure each attendance set is unique
 	$this->get('/attendance/courseMonth/{courseId}/{yearMonth}', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
-		$searchSet = ["N_COURSE_ID" => $args["courseId"], "D_CLASS_DATE" => " LIKE '".$args["yearMonth"]."-%'"];
+		$searchSet = [
+						"N_COURSE_ID" => $args["courseId"], 
+						"D_CLASS_DATE" => " LIKE '".$args["yearMonth"]."-%'"
+					];
 		
-		$response->getBody()->write(json_encode($attendanceController->getRecordSetWhere($searchSet, 
-																						["id", "N_STUDENT_ID", "N_COURSE_ID", "B_HAS_ATTENDED", "D_CLASS_DATE"], 
-																						"MultiResultSet",
-																						["id", "studentId", "courseId", "hasAttended", "classDate"]
-																					)));
+		$response->getBody()->write(json_encode($attendanceController->getRecordSetWhere(
+																			$searchSet, 
+																			[
+																				"id", 
+																				"N_STUDENT_ID", 
+																				"N_COURSE_ID", 
+																				"B_HAS_ATTENDED", 
+																				"D_CLASS_DATE"
+																			], 
+																			"MultiResultSet",
+																			[
+																				"id", 
+																				"studentId", 
+																				"courseId", 
+																				"hasAttended", 
+																				"classDate"
+																			]
+																		)));
 
         return $response;
 	});
@@ -62,8 +95,12 @@
 		$attendanceController = new AttendanceController(new DaoManager());
 
 		$bodyData = $request->getParsedBody();
-		$requestResult = $attendanceController->addAttendance($bodyData["studentId"], $bodyData["courseId"],
-														$bodyData["hasAttended"], $bodyData["classDate"]);
+		$requestResult = $attendanceController->addAttendance(
+													$bodyData["studentId"], 
+													$bodyData["courseId"],
+													$bodyData["hasAttended"], 
+													$bodyData["classDate"]
+												);
 		$responseBody = new StdClass;
 		$responseBody->success = $requestResult;
 		return $response->getBody()->write(json_encode($requestResult));
@@ -73,41 +110,45 @@
 		$attendanceController = new AttendanceController(new DaoManager());
 
 		$bodyData = $request->getParsedBody();
-		// $requestResult = $attendanceController->addAttendance($bodyData["studentId"], $bodyData["courseId"],
-		// 												$bodyData["hasAttended"], $bodyData["classDate"]);
-		$requestResult = $attendanceController->insertMultiRequest($bodyData, 
-						["N_STUDENT_ID" => "studentId", "N_COURSE_ID" => "courseId", "B_HAS_ATTENDED" => "hasAttended", "D_CLASS_DATE" => "classDate"]);
 
-		// $responseBody = new StdClass;
-		// $responseBody->success = $requestResult;
-		// file_put_contents('debug.log', print_r(json_encode($requestResult), true));
+		$requestResult = $attendanceController->insertMultiRequest($bodyData, 
+													[
+														"N_STUDENT_ID" => "studentId", 
+														"N_COURSE_ID" => "courseId", 
+														"B_HAS_ATTENDED" => "hasAttended", 
+														"D_CLASS_DATE" => "classDate"
+													]
+												);
+
 		file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', "-------------Insert Response-------------", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', json_encode($requestResult), FILE_APPEND | LOCK_EX);
 		return $response->getBody()->write(json_encode($requestResult));
-		// print_r($request->getParsedBody());
-		// return $response->getBody()->write(json_encode($request->getParsedBody()));
+
 	});
 
 	$this->post('/attendance/update/multi', function (Request $request, Response $response, array $args) {
 		$attendanceController = new AttendanceController(new DaoManager());
 
 		$bodyData = $request->getParsedBody();
-		// $requestResult = $attendanceController->addAttendance($bodyData["studentId"], $bodyData["courseId"],
-		// 												$bodyData["hasAttended"], $bodyData["classDate"]);
-		$requestResult = $attendanceController->updateMultiRequest($bodyData, 
-						["id" => "id", "N_STUDENT_ID" => "studentId", "N_COURSE_ID" => "courseId", "B_HAS_ATTENDED" => "hasAttended", "D_CLASS_DATE" => "classDate"]);
 
-		// $responseBody = new StdClass;
-		// $responseBody->success = $requestResult;
+		$requestResult = $attendanceController->updateMultiRequest($bodyData, 
+													[
+														"id" => "id", 
+														"N_STUDENT_ID" => "studentId", 
+														"N_COURSE_ID" => "courseId", 
+														"B_HAS_ATTENDED" => "hasAttended", 
+														"D_CLASS_DATE" => "classDate"
+													]
+												);
+
 		file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', "-------------Update Response-------------", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', "\n \n", FILE_APPEND | LOCK_EX);
 		file_put_contents('debug.log', json_encode($requestResult), FILE_APPEND | LOCK_EX);
 		return $response->getBody()->write(json_encode($requestResult));
-		// print_r($request->getParsedBody());
-		// return $response->getBody()->write(json_encode($request->getParsedBody()));
+
 	});
 
 	$this->post('/attendance/update', function (Request $request, Response $response, array $args) {
