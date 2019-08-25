@@ -3,9 +3,9 @@ import { RouteComponentProps, BrowserRouter, Router, Switch, Route } from 'react
 
 import MonthContainer from "./MonthContainer";
 import LandingPageContainer from "./LandingPage/LandingPageContainer";
-import YearViewLinks from "./CalendarPage/yearViewLinks";
-import MonthViewLinks from "./CalendarPage/monthViewLinks";
-import RollSheetContainer from "./CalendarPage/RollSheetContainer";
+import YearViewLinks from "./AttendancePage/yearViewLinks";
+import MonthViewLinks from "./AttendancePage/monthViewLinks";
+import RollSheetContainer from "./AttendancePage/RollSheetContainer";
 
 interface Props {
 
