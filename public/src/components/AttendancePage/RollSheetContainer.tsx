@@ -247,11 +247,15 @@ class RollSheetContainer extends React.Component<Props, State>{
 					className="rollSheetCell rollSheetNameCell" 
 					key={`attendance-name-cell-blank-${uuidv1()}`}
 				>
+					{
+						!this.state.displayPrintableView ? 
+						<p></p> : <p>PARTICIPANTS NAME</p>
+					}
 				</th>
 			);
 
 		for(let i = 0; i < this.state.courseDays.length; i++){
-			headerIndexSet.push(<th className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</th>);
+			headerIndexSet.push(<td className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</td>);
 		}
 
 		tableHeaders.push(<tr key={`main-header-index-set-${uuidv1()}`}>{headerIndexSet}</tr>);
@@ -262,7 +266,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 			headerDaySet.push(
 					<th 
-						className="rollSheetCell rollSheetNameCell" 
+						className="rollSheetCell rollSheetNameCell printableHidden" 
 						key={`attendance-day-Blank-cell-${uuidv1()}`}
 					>
 
@@ -271,15 +275,15 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 			for(let i = 0; i < this.state.courseDays.length; i++){
 				if(dayCount == 0){
-					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-m-${uuidv1()}`}>Monday</th>);
+					headerDaySet.push(<td className="rollSheetCell" key={`attendance-day-m-${uuidv1()}`}>Monday</td>);
 					dayCount++;
 				}
 				else if(dayCount == 1){
-					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-t-${uuidv1()}`}>Tuesday</th>);
+					headerDaySet.push(<td className="rollSheetCell" key={`attendance-day-t-${uuidv1()}`}>Tuesday</td>);
 					dayCount++;
 				}
 				else if(dayCount == 2){
-					headerDaySet.push(<th className="rollSheetCell" key={`attendance-day-th-${uuidv1()}`}>Thursday</th>);	
+					headerDaySet.push(<td className="rollSheetCell" key={`attendance-day-th-${uuidv1()}`}>Thursday</td>);	
 					dayCount = 0;
 				}
 			}	
@@ -289,12 +293,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 					className="rollSheetCell rollSheetNameCell" 
 					key={`attendance-names-header-${uuidv1()}`}
 				>
-					Names
+					<p>Names</p>
 				</th>
 				);
 
 			for(let i = 0; i < this.state.courseDays.length; i++){
-				headerDateSet.push(<th className="rollSheetCell" key={`attendance-date-cell-${uuidv1()}`}>
+				headerDateSet.push(<td className="rollSheetCell" key={`attendance-date-cell-${uuidv1()}`}>
 										{
 											this.state.courseDays[i].toLocaleDateString(
 												"en-US", 
@@ -305,11 +309,11 @@ class RollSheetContainer extends React.Component<Props, State>{
 													}
 												)
 										}
-									</th>)
+									</td>)
 			}
 
-			tableHeaders.push(<tr key={`main-header-day-set-${uuidv1()}`}>{headerDaySet}</tr>);
-			tableHeaders.push(<tr key={`main-header-date-set-${uuidv1()}`}>{headerDateSet}</tr>); 
+			tableHeaders.push(<tr className="printableHidden" key={`main-header-day-set-${uuidv1()}`}>{headerDaySet}</tr>);
+			tableHeaders.push(<tr className="printableHidden" key={`main-header-date-set-${uuidv1()}`}>{headerDateSet}</tr>); 
 		}
 
 		// Create the names of the students along with the respective chekboxes for their attendance.
@@ -384,11 +388,11 @@ class RollSheetContainer extends React.Component<Props, State>{
 			}
 			tableBodySet.push((
 								<tr key={`student-header-row-${uuidv1()}`}>
-								<th className="rollSheetCell rollSheetNameCell" 
-									key={`student-header-${uuidv1()}`}
-								>
-									{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
-								</th>
+									<th className="rollSheetCell rollSheetNameCell" 
+										key={`student-header-${uuidv1()}`}
+									>
+										<p>{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}</p>
+									</th>
 									{attendanceBodySet}
 								</tr>
 							));
@@ -401,6 +405,15 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		return (
 			<React.Fragment>
+				<div className={
+						`courseHeaders 
+						${this.state.displayPrintableView ? "printableRevealed" : ""}`
+					}>
+					<input type="text" disabled/>
+					<input type="text" disabled/>
+					<input type="text" disabled/>
+				</div>
+
 				<form method="POST" onSubmit={this.submitAttendanceForm}>
 					<table id="roll-sheet-table" className="rollSheetContainer">
 						<tbody className="rollSheetBody">

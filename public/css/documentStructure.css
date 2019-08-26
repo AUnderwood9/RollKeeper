@@ -1,5 +1,9 @@
+body{
+	box-sizing: border-box;
+}
+
 .mainContainer{
-	width: 60vw;
+	width: 80vw;
 	margin: 0 auto;
 }
 
@@ -60,4 +64,39 @@
 	display: block;
     width: 100%;
     overflow-x: auto;
+}
+
+.rollSheetBody tr {
+	background-color: white;
+}
+
+.rollSheetBody th {
+	position: -webkit-sticky; 
+	position: sticky;
+	left: 0;
+	background-color: white;
+}
+
+.rollSheetBody thead th:first-child {
+	left: 0;
+	z-index: 1;
+}
+
+.courseHeaders{
+	display: none;
+	justify-content: stretch;
+	align-content: stretch;
+	height: 5rem;
+	width: 80vw;
+	margin-bottom: 3rem;
+}
+
+.courseHeaders > input{
+	width: 100%;
+}
+
+.printableRevealed{
+	display: flex;
+	justify-content: stretch;
+	align-content: stretch;
 }

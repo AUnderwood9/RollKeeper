@@ -33,3 +33,15 @@ table, th, td {
 .rollSheetCell{
 	width: 8em;
 }
+
+.rollSheetCell.rollSheetNameCell p{
+	width: 12em;
+}
+
+.courseHeaders{
+	/* margin-bottom: 3rem; */
+}
+
+/* .courseHeaders > li>input{
+	width: 33%;
+} */
