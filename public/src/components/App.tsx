@@ -12,23 +12,23 @@ interface Props {
 }
 
 interface State {
-	currentCourseId: number;
-	featureList: []
+	currentCourseId	: number;
+	featureList		: []
 }
 
 class App extends React.PureComponent<Props, State>{
 	constructor(props){
 		super(props);
 		
-		// Storing current course id for the application in the window's session for now. Will in the future create cron jobs to maintain sessions
-		// and store/destroy courseIds along with user sessions
+		// Storing current course id for the application in the window's session for now.
 
 		// console.log(localStorage.getItem("sessionCourseId"));
 
 		// const currentCourseId 
 		this.state = {
-			currentCourseId: localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0,
-			featureList: []
+			// @TODO Remove once the month roll sheet is refactored
+			// currentCourseId	: localStorage.getItem("sessionCourseId") != null ? parseInt(localStorage.getItem("sessionCourseId")) : 0,
+			featureList		: []
 		}
 	}
 
@@ -57,18 +57,40 @@ class App extends React.PureComponent<Props, State>{
 			<BrowserRouter>
 				<div className="mainContainer">
 					<Switch>
-						<Route path="/calendar" exact render={ (props) => <YearViewLinks routeMatch={props.match} /> }/>
-						<Route path="/" exact render={(props) => <LandingPageContainer
-							featuresEnabled={this.state.featureList}
-						/>}/>
-						<Route path="/rollsheet" render={(props) => <RollSheetContainer 
-																		routeMatch = {props.match}
-																		/>}/>
-						<Route exact path="/calendar/month/:year" render={ (props) => <MonthViewLinks routeMatch={props.match} /> }/>
-						<Route path="/calendar/month/:year/:month" render={(props) => <MonthContainer 
-																							courseId={this.state.currentCourseId} 
-																							routeMatch = {props.match}
-																							/>}/>
+						<Route 
+							path="/calendar" 
+							exact 
+							render={ 
+									(props) => <YearViewLinks routeMatch={props.match} /> 
+							}/>
+
+						<Route 
+							path="/" 
+							exact 
+							render={
+									(props) => <LandingPageContainer featuresEnabled={this.state.featureList}
+							/>}/>
+
+						<Route 
+							path="/rollsheet" 
+							render={
+								(props) => <RollSheetContainer routeMatch = {props.match}
+							/>}/>
+
+						<Route 
+							exact 
+							path="/calendar/month/:year" 
+							render={ 
+								(props) => <MonthViewLinks routeMatch={props.match} /> 
+							}/>
+
+						<Route 
+							path="/calendar/month/:year/:month" 
+							render={
+								(props) => <MonthContainer 
+												// courseId={this.state.currentCourseId} 
+												routeMatch = {props.match} />
+							}/>
 					</Switch>
 				</div>
 			</BrowserRouter>

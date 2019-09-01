@@ -380,7 +380,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 									id={`student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}-printable`}
 									key={`student-${generalKeyBody}-printable`}
 								>
-										{isChecked ? "x" : ""}
+										{isChecked ? "" : "X"}
 								</span>
 						</td>
 					)
@@ -405,13 +405,23 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 		return (
 			<React.Fragment>
-				<div className={
-						`courseHeaders 
-						${this.state.displayPrintableView ? "printableRevealed" : ""}`
-					}>
-					<input type="text" disabled/>
-					<input type="text" disabled/>
-					<input type="text" disabled/>
+				<div className={`courseHeadersContainer ${this.state.displayPrintableView ? "printableRevealed" : ""}`}>
+					<h1 className="rollLeadHeading">Participant -Attendance-</h1>
+
+					<div className="courseHeaders">
+						<div className="rollLeadHeaderBox">
+							<p>Course Title</p>
+							<p>{localStorage.getItem("sessionCourseTitle")}</p>
+						</div>
+						<div className="rollLeadHeaderBox">
+							<p>Beginning Date</p>
+							<p>{localStorage.getItem("sessionTermStart")}</p>
+						</div>
+						<div className="rollLeadHeaderBox">
+							<p>Total Course Hours</p>
+							<p></p>
+						</div>
+					</div>
 				</div>
 
 				<form method="POST" onSubmit={this.submitAttendanceForm}>

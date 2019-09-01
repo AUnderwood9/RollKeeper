@@ -11,10 +11,22 @@ interface Props{
 }
 
 interface State {
-	courseListing: {courseId: string, courseTitle: string, instructorId: string, termStart: Date, termEnd: Date, classDays: string}[],
-	courseSelected: boolean,
-	instructorList: {instructorId: string, firstName: string, lastName: string, contactId: string}[],
-	attendanceViewPathName: string
+	courseListing: {
+			courseId		: string, 
+			courseTitle		: string, 
+			instructorId	: string, 
+			termStart		: Date, 
+			termEnd			: Date, 
+			classDays		: string
+		}[],
+	courseSelected			: boolean,
+	instructorList			: {
+								instructorId	: string, 
+								firstName		: string, 
+								lastName		: string, 
+								contactId		: string
+							}[],
+	attendanceViewPathName	: string
 }
 
 class LandingPageContainer extends React.Component<Props, State>{
@@ -22,75 +34,78 @@ class LandingPageContainer extends React.Component<Props, State>{
 		super(props);
 
 		this.state = {
-			courseListing: [],
-			courseSelectedcourseSelected: false,
-			instructorList: [],
-			attendanceViewPathName: "rollsheet"
+			courseListing					: [],
+			courseSelectedcourseSelected	: false,
+			instructorList					: [],
+			attendanceViewPathName			: "rollsheet"
 		};
 
 		this.selectCourse.bind(this);
 	}
 
 	selectCourse = (checkboxValue: number) => {
-		console.log("Selected a value " + checkboxValue);
+		
 		if(checkboxValue > 0){
-			// console.log("Selected a value " + checkboxValue);
 			// this.setState((prevState) => {return {currentCourseId: checkboxValue}})
 			this.setState({
-				courseListing: this.state.courseListing,
-				courseSelected: true
+				courseListing	: this.state.courseListing,
+				courseSelected	: true
 			});
 		}
 		else{
 			this.setState({
-				courseListing: this.state.courseListing,
-				courseSelected: false
+				courseListing	: this.state.courseListing,
+				courseSelected	: false
 			});
 		}
 	}
 
 	async componentDidMount(){
-		console.log(this.props.featuresEnabled);
+		
 		const [courseListResponse, instructorListResponses] = await Promise.all([
 			fetch("http://localhost/rollKeeper/api/courses"),
 			fetch("http://localhost/rollKeeper/api/person/all/instructor")
 		]);
 
-		const [courseListObject, instructorListObject] = await Promise.all([
+		const [courseListObject, instructorListObject] 		= await Promise.all([
 			courseListResponse.json(), instructorListResponses.json()
 		]);
 
 		let attendanceViewPathName;
 
+		// Will be used in the future to change the type of view thats displayed.
 		if(this.props.featuresEnabled.length > 0){
-			// check features here
 			attendanceViewPathName = "rollsheet";
 		} else{
 			attendanceViewPathName = "rollsheet";
 		}
 
 		this.setState({
-			courseListing: courseListObject,
-			instructorList: instructorListObject,
-			attendanceViewPathName: attendanceViewPathName
+			courseListing			: courseListObject,
+			instructorList			: instructorListObject,
+			attendanceViewPathName	: attendanceViewPathName
 		});
 	}
 
 	renderCourseListCheckboxElement = () =>{
-		return (this.state.courseListing) ? <CourseListCheckbox courseListing={this.state.courseListing} 
-												selectCoursesEvent={this.selectCourse} 
-												isViewCheckbox={true as boolean} 
-												courseSeletionEvent={null} /> : '';
+		return (this.state.courseListing) ? <CourseListCheckbox 
+												courseListing		= {this.state.courseListing} 
+												selectCoursesEvent	= {this.selectCourse} 
+												isViewCheckbox		= {true as boolean} 
+												courseSeletionEvent	= {null} 
+											/> : '';
 	}
 
 	renderViewAttendanceButton = () =>{
-		console.log(this.state.attendanceViewPathName);
-		console.log(localStorage.getItem("sessionCourseId"));
+
 		if(this.state.courseSelected){
 			return(
 				<div className="buttonLinkGroup">
-					<Link to={{
-						pathname: `/${this.state.attendanceViewPathName}`
+					<Link to = {{
+						pathname	: `/${this.state.attendanceViewPathName}`
+						state		: {
+										fromNotifications: true
+									}
 					}}>Go to Attendance</Link>
 				</div>
 			)
@@ -103,24 +118,28 @@ class LandingPageContainer extends React.Component<Props, State>{
 	renderModals = () => {
 			return(
 				<React.Fragment>
-					<CreateCourseModal instructorList={this.state.instructorList} toggleModalEvent={toggleModal} courseListings={this.renderCourseListCheckboxElement}/>
-					<CreatePersonModal toggleModalEvent={toggleModal}/>
+					<CreateCourseModal 
+							instructorList		= {this.state.instructorList} 
+							toggleModalEvent	= {toggleModal} 
+							courseListings		= {this.renderCourseListCheckboxElement}
+						/>
+					<CreatePersonModal toggleModalEvent	= {toggleModal}/>
 				</React.Fragment>
 			)
 	}
 
 	render(){
 		return (
-			<div id="landingPageContainer">
+			<div id	= "landingPageContainer">
 				<h1>Welcome</h1>
 				<button 
-					className="landingPageModalButton"
-					onClick={toggleModal.bind(this, "create-courses-modal-container")}
+					className	= "landingPageModalButton"
+					onClick		= {toggleModal.bind(this, "create-courses-modal-container")}
 				>Add Courses</button>
 				{this.renderCourseListCheckboxElement()}
 				<button 
-					className="landingPageModalButton"
-					onClick={toggleModal.bind(this, "create-person-modal-container")}
+					className	= "landingPageModalButton"
+					onClick		= {toggleModal.bind(this, "create-person-modal-container")}
 				>Add Student/Instrctor</button>
 				{this.renderViewAttendanceButton()}
 				{this.renderModals()}
