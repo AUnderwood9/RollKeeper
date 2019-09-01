@@ -82,21 +82,33 @@ body{
 	z-index: 1;
 }
 
-.courseHeaders{
+.courseHeadersContainer{
 	display: none;
-	justify-content: stretch;
-	align-content: stretch;
-	height: 5rem;
-	width: 80vw;
-	margin-bottom: 3rem;
-}
-
-.courseHeaders > input{
-	width: 100%;
 }
 
 .printableRevealed{
+	/* display: flex;
+	justify-content: stretch;
+	align-content: stretch; */
+	margin-top: 2vh;
+	display: grid;
+	grid-template-rows: 4vh 16vh;
+	row-gap: 2vh; 
+}
+
+.courseHeaders{
 	display: flex;
 	justify-content: stretch;
 	align-content: stretch;
+	height: 10vh;
+	width: 80vw;
+	margin-bottom: 2vh;
+}
+
+.courseHeaders > div{
+	width: 100%;
+}
+
+.rollLeadHeading{
+	justify-self: center;
 }

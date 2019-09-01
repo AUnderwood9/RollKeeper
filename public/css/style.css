@@ -38,10 +38,6 @@ table, th, td {
 	width: 12em;
 }
 
-.courseHeaders{
-	/* margin-bottom: 3rem; */
+.rollLeadHeaderBox{
+	border: 1px solid black;
 }
-
-/* .courseHeaders > li>input{
-	width: 33%;
-} */
