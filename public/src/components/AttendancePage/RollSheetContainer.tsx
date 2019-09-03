@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Paginator from "./paginator";
 
 import { makeFetchPost } from '../../serviceTools';
 
@@ -426,7 +427,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 				<form method="POST" onSubmit={this.submitAttendanceForm}>
 					<table id="roll-sheet-table" className="rollSheetContainer">
-						<tbody className="rollSheetBody">
+						<tbody className={`rollSheetBody ${this.state.displayPrintableView ? "printableTableBody" : ""}`}>
 							{ this.state.courseDays.length > 0 ? this.buildTable(1) : <React.Fragment/>}
 						</tbody>
 					</table>
@@ -443,6 +444,9 @@ class RollSheetContainer extends React.Component<Props, State>{
 						"Display Printable View" : "Display Editable View"
 					}
 				</button>
+				{
+					!this.state.displayPrintableView ? <React.Fragment /> : <Paginator/>
+				}
 			</React.Fragment>
 		);
 	}
