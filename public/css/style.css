@@ -41,3 +41,19 @@ table, th, td {
 .rollLeadHeaderBox{
 	border: 1px solid black;
 }
+
+.paginatorContainer{
+	margin-bottom: 4rem;
+}
+
+.paginatorElement{
+	font-size: 6em;
+}
+
+.paginatorElement:hover{
+	-webkit-text-shadow: 0px 0px 30px rgba(69, 102, 224, 0.67);
+	-moz-text-shadow:    0px 0px 30px rgba(69, 102, 224, 0.67);
+	text-shadow:         0px 0px 30px rgba(69, 102, 224, 0.67);
+	cursor: pointer;
+}
+
