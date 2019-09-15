@@ -20,7 +20,8 @@ interface State {
 	updateRosterAttendanceList	: {}[];
 	formSubmitted				: boolean,
 	displayPrintableView		: boolean,
-	currentCourseId				: String
+	currentCourseId				: String,
+	paginationThreshold			: number
 }
 
 class RollSheetContainer extends React.Component<Props, State>{
@@ -39,7 +40,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 			freshRosterAttendanceList	: [],
 			updateRosterAttendanceList	: [],
 			currentCourseId				: localStorage.getItem("sessionCourseId") != null ? 
-											parseInt(localStorage.getItem("sessionCourseId")).toString() : "0"
+											parseInt(localStorage.getItem("sessionCourseId")).toString() : "0",
+			paginationThreshold			: 0
 		}
 	}
 
@@ -177,6 +179,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 				classDate	: currentSelectedDate
 			};
 
+		let newAttendanceObj = Object.assign(
+								attendanceStateList[currentAttendanceIndex], 
+								{hasAttended	: hasStudentAttended});
+
+		console.log(newAttendanceObj);
+
 		let SelectedStudentObj = attendanceStateList[currentAttendanceIndex];
 
 		// Determine if the student already has a record of attendance.
@@ -191,6 +199,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			// if the update list has this record already remove it to avoid duplicate submissions
 			if(updateRecordIndex != undefined && updateRecordIndex != null && updateRecordIndex != -1){
 				tempAttendanceList.splice(updateRecordIndex, 1);
+				// tempAttendanceList[updateRecordIndex].
 			}
 
 			tempAttendanceList.push(currentAttendanceObj);
@@ -213,6 +222,28 @@ class RollSheetContainer extends React.Component<Props, State>{
 			tempAttendanceList.push(currentAttendanceObj);
 			attendanceStateList[currentAttendanceIndex].hasAttended = hasStudentAttended;
 			this.setState({ freshRosterAttendanceList: tempAttendanceList, attendanceStateList });
+		}
+	}
+
+	handlePagination = (this.state) = 
+		(incrementInterval: String) => {
+		let { paginationThreshold } = this.state;
+
+		if(paginationThreshold <= this.state.attendanceStateList.length 
+			&& incrementInterval === "incriment"){
+			paginationThreshold+=25;
+
+			console.log("Threshold: " + paginationThreshold);
+
+			this.setState({paginationThreshold});
+		}
+		else if(paginationThreshold >= 0 
+			&& incrementInterval === "decriment"){
+			paginationThreshold-=25;
+
+			console.log("Threshold: " + paginationThreshold);
+
+			this.setState({paginationThreshold});
 		}
 	}
 
@@ -445,7 +476,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 					}
 				</button>
 				{
-					!this.state.displayPrintableView ? <React.Fragment /> : <Paginator/>
+					!this.state.displayPrintableView ? 
+						<React.Fragment /> : <Paginator handlePagination={this.handlePagination} />
 				}
 			</React.Fragment>
 		);
