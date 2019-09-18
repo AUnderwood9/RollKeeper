@@ -233,7 +233,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 		if(paginationThreshold < this.state.attendanceStateList.length 
 			&& intervalDefinition === "incriment")
 		{
-			paginationThreshold+= (paginationThreshold + 25) <= this.state.attendanceStateList.length ? 
+			paginationThreshold+= (paginationThreshold + 25) < this.state.attendanceStateList.length ? 
 				25 : this.state.attendanceStateList.length - paginationThreshold;
 
 			console.log("Threshold: " + paginationThreshold);
@@ -243,6 +243,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 		else if(paginationThreshold > 0 
 			&& intervalDefinition === "decriment"){
 			paginationThreshold-=25;
+
+			paginationThreshold-= (paginationThreshold - 25) > 0 ? 25 : 0;
 
 			console.log("Threshold: " + paginationThreshold);
 
