@@ -358,7 +358,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 				for(let i = 0; i < PADDING_THRESHOLD; i++){
 					attendanceBodySet.push(
 						<td 
-							className="rollSheetCell"
+							className="rollSheetCell printableBoxCell"
 							key={`cell-${uuidv1()}-printable`}
 						>
 	
@@ -370,6 +370,36 @@ class RollSheetContainer extends React.Component<Props, State>{
 					);
 				}
 			}
+		}
+	}
+
+	buildBlankTableRows(rows: number, columns: number, tableBodySet: JSX.Element[]): void{
+		for(let i = 0; i < rows; i++){
+			let blankColumnSet: JSX.Element[] = [];
+			for(let j = 0; j < columns; j++){
+				blankColumnSet.push(
+					<td 
+							className="rollSheetCell printableBoxCell"
+							key={`cell-${uuidv1()}-printable`}
+						>
+	
+								<span 
+									key={`student-${uuidv1()}-printable`}
+								>
+								</span>
+						</td>
+				);
+			}
+			tableBodySet.push(
+				<tr key={`student-header-row-${uuidv1()}`}>
+					<th className="rollSheetCell rollSheetNameCell" 
+						key={`student-header-${uuidv1()}`}
+					>
+						<p></p>
+					</th>
+					{blankColumnSet}
+				</tr>
+			);
 		}
 	}
 
@@ -388,7 +418,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 				>
 					{
 						!this.state.displayPrintableView ? 
-						<p></p> : <p>PARTICIPANTS NAME</p>
+						<p></p> : "PARTICIPANTS NAME"
 					}
 				</th>
 			);
@@ -466,83 +496,24 @@ class RollSheetContainer extends React.Component<Props, State>{
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
 			let attendanceBodySet : JSX.Element[] = [];
 			this.buildTableCheckboxes(j, attendanceBodySet);
-			// for(let i = 0; i < this.state.courseDays.length; i++){
-
-			// 	let currentCourseDate 	= this.state.courseDays[i].getDate() < 10 ? 
-			// 		"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
-			// 	let currentCourseMonth 	= this.state.courseDays[i].getMonth()+1 < 10 ? 
-			// 		"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
-			// 	let currentCheckDate 	= `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
-
-			// 	let attendanceCheck 	= this.state.attendanceList.find((attendanceElement) => {
-			// 		return attendanceElement.studentId == this.state.courseRosterList[j].id &&
-			// 		attendanceElement.classDate == currentCheckDate &&
-			// 		attendanceElement.hasAttended == true;
-			// 	});
-
-			// 	let attendanceIndex 	= this.state.attendanceStateList.findIndex((item) => {
-			// 			return item.id == this.state.courseRosterList[j].id 
-			// 			&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
-			// 		});
-
-			// 	let generalKeyBody 			= `${this.state.courseRosterList[j].id}-date-${currentCheckDate}-course-${this.state.currentCourseId}`;
-			// 	let currentAttendenceRecord = this.state.attendanceStateList[attendanceIndex];
-			// 	let isChecked 				= !currentAttendenceRecord.hasAttended;
-
-			// 	if(!this.state.displayPrintableView){
-			// 		const checkboxProps = {
-			// 			name 				: "attendanceStateList",
-			// 			defaultChecked		: !currentAttendenceRecord.hasAttended ,
-			// 			value 				: this.state.courseRosterList[j].id ,
-			// 			id 					: `student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}` ,
-			// 			key 				: `student-${generalKeyBody}` ,
-			// 			onClick 			: this.handleCheckboxClick ,
-			// 			"data-date" 		: `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`, 
-			// 			"data-stateindex"	: attendanceIndex,
-			// 			"data-stateid" 		: currentAttendenceRecord != undefined && currentAttendenceRecord != null ? 
-			// 									currentAttendenceRecord.id : -1
-			// 		};
-
-			// 		attendanceBodySet.push(
-			// 			<td 
-			// 				className="rollSheetCell" 
-			// 				key={`student-td-${generalKeyBody}`}
-			// 			>
-			// 				<input type="checkbox" {...checkboxProps} />
-			// 			</td>
-			// 		)
-			// 	}
-			// 	else{
-			// 		attendanceBodySet.push(
-			// 			<td 
-			// 				className="rollSheetCell"
-			// 				key={`cell-${generalKeyBody}-printable`}
-			// 			>
-
-			// 					<span 
-			// 						type="checkbox" 
-			// 						checked
-			// 						id={`student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}-printable`}
-			// 						key={`student-${generalKeyBody}-printable`}
-			// 					>
-			// 							{isChecked ? "" : "X"}
-			// 					</span>
-			// 			</td>
-			// 		)
-			// 	}
-			// }
+			
 			tableBodySet.push((
 								<tr key={`student-header-row-${uuidv1()}`}>
 									<th className="rollSheetCell rollSheetNameCell" 
 										key={`student-header-${uuidv1()}`}
 									>
-										<p>{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}</p>
+										{`${this.state.courseRosterList[j].firstName} ${this.state.courseRosterList[j].lastName}`}
 									</th>
 									{attendanceBodySet}
 								</tr>
 							));
 
 		}
+
+		if(this.state.displayPrintableView && (this.state.courseRosterList.length < 20)){
+			this.buildBlankTableRows(20 - this.state.courseRosterList.length, 25, tableBodySet);
+		}
+
 		return [...tableHeaders, ...tableBodySet];
 	}
 
@@ -582,7 +553,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 				</form>
 
-				<button onClick={this.handleDisplayChangeClick}>
+				<button className="viewTypeBtn" onClick={this.handleDisplayChangeClick}>
 					{
 						!this.state.displayPrintableView ? 
 						"Display Printable View" : "Display Editable View"

@@ -32,6 +32,7 @@ table, th, td {
 
 .rollSheetCell{
 	width: 8em;
+	height: 1em;
 }
 
 .rollSheetCell.rollSheetNameCell p{

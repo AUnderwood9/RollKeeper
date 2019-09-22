@@ -2,6 +2,10 @@ body{
 	box-sizing: border-box;
 }
 
+table{
+	table-layout: fixed;
+}
+
 .mainContainer{
 	width: 80vw;
 	margin: 0 auto;
@@ -104,8 +108,23 @@ body{
 	width: 100%;
 }
 
+.rollSheetCell.printableBoxCell{
+	width: 25em;
+}
+
 .rollLeadHeading{
 	justify-self: center;
+}
+
+.printableTableBody .rollSheetCell.rollSheetNameCell p {
+    width: 165px;
+}
+
+.printableTableBody.rollSheetBody th {
+    position: unset;
+    position: unset;
+    left: unset;
+	background-color: unset;
 }
 
 .paginatorContainer{
@@ -113,4 +132,30 @@ body{
     justify-content: space-evenly;
     width: 50vw;
     margin: 0 auto;
+}
+
+@media print{
+	tr{
+		border: 1px solid black;
+	}
+
+	.courseHeaders{
+		width: 100%;
+	}
+
+	.rollSheetCell{
+		font-size: 10px;
+	}
+	
+	/* .rollSheetCell.rollSheetNameCell p {
+		width: 1em;
+	} */
+
+	.mainContainer {
+		width: 90vw;
+	}
+
+	.paginatorContainer, .viewTypeBtn{
+		display: none;
+	}
 }
