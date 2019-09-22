@@ -20,7 +20,8 @@ interface State {
 	updateRosterAttendanceList	: {}[];
 	formSubmitted				: boolean,
 	displayPrintableView		: boolean,
-	currentCourseId				: String
+	currentCourseId				: String,
+	paginationThreshold			: number
 }
 
 class RollSheetContainer extends React.Component<Props, State>{
@@ -39,7 +40,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 			freshRosterAttendanceList	: [],
 			updateRosterAttendanceList	: [],
 			currentCourseId				: localStorage.getItem("sessionCourseId") != null ? 
-											parseInt(localStorage.getItem("sessionCourseId")).toString() : "0"
+											parseInt(localStorage.getItem("sessionCourseId")).toString() : "0",
+			paginationThreshold			: 0
 		}
 	}
 
@@ -177,6 +179,12 @@ class RollSheetContainer extends React.Component<Props, State>{
 				classDate	: currentSelectedDate
 			};
 
+		let newAttendanceObj = Object.assign(
+								attendanceStateList[currentAttendanceIndex], 
+								{hasAttended	: hasStudentAttended});
+
+		console.log(newAttendanceObj);
+
 		let SelectedStudentObj = attendanceStateList[currentAttendanceIndex];
 
 		// Determine if the student already has a record of attendance.
@@ -191,6 +199,7 @@ class RollSheetContainer extends React.Component<Props, State>{
 			// if the update list has this record already remove it to avoid duplicate submissions
 			if(updateRecordIndex != undefined && updateRecordIndex != null && updateRecordIndex != -1){
 				tempAttendanceList.splice(updateRecordIndex, 1);
+				// tempAttendanceList[updateRecordIndex].
 			}
 
 			tempAttendanceList.push(currentAttendanceObj);
@@ -216,6 +225,28 @@ class RollSheetContainer extends React.Component<Props, State>{
 		}
 	}
 
+	handlePagination = (intervalDefinition: String) => (event) => {
+		let { paginationThreshold } = this.state;
+
+		if(paginationThreshold < this.state.courseDays.length
+			&& (paginationThreshold + 25) < this.state.courseDays.length 
+			&& intervalDefinition === "incriment")
+		{
+			paginationThreshold += (paginationThreshold + 25) < this.state.courseDays.length ? 
+				25 : this.state.courseDays.length - paginationThreshold;
+
+			this.setState({paginationThreshold});
+		}
+		else if(paginationThreshold > 0 
+			&& intervalDefinition === "decriment"){
+
+			paginationThreshold = (paginationThreshold - 25) > 0 ? 
+				paginationThreshold - 25 : 0;
+
+			this.setState({paginationThreshold});
+		}
+	}
+
 	handleDisplayChangeClick = (this.state) = () => {
 		this.setState({ displayPrintableView: !this.state.displayPrintableView });
 	}
@@ -233,6 +264,113 @@ class RollSheetContainer extends React.Component<Props, State>{
 		updateRosterAttendanceList.splice(0, updateRosterAttendanceList.length);
 
 		this.setState({ freshRosterAttendanceList, updateRosterAttendanceList });
+	}
+
+	buildTableCheckboxes(studentIdIndex: number, 
+		attendanceBodySet: JSX.Element[]): void{
+		if(!this.state.displayPrintableView){
+			for(let i = 0; i < this.state.courseDays.length; i++){
+
+				let currentCourseDate 	= this.state.courseDays[i].getDate() < 10 ? 
+					"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
+				let currentCourseMonth 	= this.state.courseDays[i].getMonth()+1 < 10 ? 
+					"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
+				let currentCheckDate 	= `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
+
+				let attendanceCheck 	= this.state.attendanceList.find((attendanceElement) => {
+					return attendanceElement.studentId == this.state.courseRosterList[studentIdIndex].id &&
+					attendanceElement.classDate == currentCheckDate &&
+					attendanceElement.hasAttended == true;
+				});
+
+				let attendanceIndex 	= this.state.attendanceStateList.findIndex((item) => {
+						return item.id == this.state.courseRosterList[studentIdIndex].id 
+						&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
+					});
+
+				let generalKeyBody 			= `${this.state.courseRosterList[studentIdIndex].id}-date-${currentCheckDate}-course-${this.state.currentCourseId}`;
+				let currentAttendenceRecord = this.state.attendanceStateList[attendanceIndex];
+				let isChecked 				= !currentAttendenceRecord.hasAttended;
+
+				const checkboxProps = {
+					type				: "checkbox",
+					name 				: "attendanceStateList",
+					defaultChecked		: !currentAttendenceRecord.hasAttended ,
+					value 				: this.state.courseRosterList[studentIdIndex].id ,
+					id 					: `student-${this.state.courseRosterList[studentIdIndex].id}-date-${currentCheckDate}` ,
+					key 				: `student-${generalKeyBody}` ,
+					onClick 			: this.handleCheckboxClick ,
+					"data-date" 		: `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`, 
+					"data-stateindex"	: attendanceIndex,
+					"data-stateid" 		: currentAttendenceRecord != undefined && currentAttendenceRecord != null ? 
+											currentAttendenceRecord.id : -1
+				};
+
+				attendanceBodySet.push(
+					<td 
+						className="rollSheetCell" 
+						key={`student-td-${generalKeyBody}`}
+					>
+						<input {...checkboxProps} />
+					</td>
+				);
+			}
+		} else {
+			const UPPER_THRESHOLD = 
+				(this.state.paginationThreshold + 25) < this.state.courseDays.length ? 
+				this.state.paginationThreshold + 25 : 
+				this.state.courseDays.length;
+
+			const PADDING_THRESHOLD = this.state.paginationThreshold + 25 - UPPER_THRESHOLD; 
+
+			for(let i = this.state.paginationThreshold; i < UPPER_THRESHOLD; i++){
+				let currentCourseDate 	= this.state.courseDays[i].getDate() < 10 ? 
+					"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
+				let currentCourseMonth 	= this.state.courseDays[i].getMonth()+1 < 10 ? 
+					"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
+				let currentCheckDate 	= `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
+
+				let attendanceIndex 	= this.state.attendanceStateList.findIndex((item) => {
+						return item.id == this.state.courseRosterList[studentIdIndex].id 
+						&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
+					});
+
+				let generalKeyBody 			= `${this.state.courseRosterList[studentIdIndex].id}-date-${currentCheckDate}-course-${this.state.currentCourseId}`;
+				let currentAttendenceRecord = this.state.attendanceStateList[attendanceIndex];
+				let isChecked 				= !currentAttendenceRecord.hasAttended;
+
+				attendanceBodySet.push(
+					<td 
+						className="rollSheetCell"
+						key={`cell-${generalKeyBody}-printable`}
+					>
+
+							<span 
+								key={`student-${generalKeyBody}-printable`}
+							>
+									{isChecked ? "" : "X"}
+							</span>
+					</td>
+				);
+			}
+			
+			if( UPPER_THRESHOLD == this.state.courseDays.length){
+				for(let i = 0; i < PADDING_THRESHOLD; i++){
+					attendanceBodySet.push(
+						<td 
+							className="rollSheetCell"
+							key={`cell-${uuidv1()}-printable`}
+						>
+	
+								<span 
+									key={`student-${uuidv1()}-printable`}
+								>
+								</span>
+						</td>
+					);
+				}
+			}
+		}
 	}
 
 	buildTable(StartingIndex: number): JSX.Element[]{
@@ -255,14 +393,14 @@ class RollSheetContainer extends React.Component<Props, State>{
 				</th>
 			);
 
-		for(let i = 0; i < this.state.courseDays.length; i++){
-			headerIndexSet.push(<td className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</td>);
-		}
-
-		tableHeaders.push(<tr key={`main-header-index-set-${uuidv1()}`}>{headerIndexSet}</tr>);
-
 		// Attendance Days
 		if(!this.state.displayPrintableView){
+			for(let i = 0; i < this.state.courseDays.length; i++){
+				headerIndexSet.push(<td className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</td>);
+			}
+	
+			tableHeaders.push(<tr key={`main-header-index-set-${uuidv1()}`}>{headerIndexSet}</tr>);
+
 			let dayCount = 0;
 
 			headerDaySet.push(
@@ -315,78 +453,84 @@ class RollSheetContainer extends React.Component<Props, State>{
 
 			tableHeaders.push(<tr className="printableHidden" key={`main-header-day-set-${uuidv1()}`}>{headerDaySet}</tr>);
 			tableHeaders.push(<tr className="printableHidden" key={`main-header-date-set-${uuidv1()}`}>{headerDateSet}</tr>); 
+		} else {
+			for(let i = 0; i < 25; i++){
+				headerIndexSet.push(<td className="rollSheetCell" key={`attendance-index-${uuidv1()}`}>{i+1}</td>);
+			}
+	
+			tableHeaders.push(<tr key={`main-header-index-set-${uuidv1()}`}>{headerIndexSet}</tr>);
 		}
 
 		// Create the names of the students along with the respective chekboxes for their attendance.
 		
 		for(let j = 0; j < this.state.courseRosterList.length; j++){
 			let attendanceBodySet : JSX.Element[] = [];
+			this.buildTableCheckboxes(j, attendanceBodySet);
+			// for(let i = 0; i < this.state.courseDays.length; i++){
 
-			for(let i = 0; i < this.state.courseDays.length; i++){
+			// 	let currentCourseDate 	= this.state.courseDays[i].getDate() < 10 ? 
+			// 		"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
+			// 	let currentCourseMonth 	= this.state.courseDays[i].getMonth()+1 < 10 ? 
+			// 		"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
+			// 	let currentCheckDate 	= `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
 
-				let currentCourseDate 	= this.state.courseDays[i].getDate() < 10 ? 
-					"0" + this.state.courseDays[i].getDate().toString() : this.state.courseDays[i].getDate().toString();
-				let currentCourseMonth 	= this.state.courseDays[i].getMonth()+1 < 10 ? 
-					"0" + (this.state.courseDays[i].getMonth()+1).toString() : (this.state.courseDays[i].getMonth()+1).toString();
-				let currentCheckDate 	= `${this.state.courseDays[i].getFullYear()}-${currentCourseMonth}-${currentCourseDate}`;
+			// 	let attendanceCheck 	= this.state.attendanceList.find((attendanceElement) => {
+			// 		return attendanceElement.studentId == this.state.courseRosterList[j].id &&
+			// 		attendanceElement.classDate == currentCheckDate &&
+			// 		attendanceElement.hasAttended == true;
+			// 	});
 
-				let attendanceCheck 	= this.state.attendanceList.find((attendanceElement) => {
-					return attendanceElement.studentId == this.state.courseRosterList[j].id &&
-					attendanceElement.classDate == currentCheckDate &&
-					attendanceElement.hasAttended == true;
-				});
+			// 	let attendanceIndex 	= this.state.attendanceStateList.findIndex((item) => {
+			// 			return item.id == this.state.courseRosterList[j].id 
+			// 			&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
+			// 		});
 
-				let attendanceIndex 	= this.state.attendanceStateList.findIndex((item) => {
-						return item.id == this.state.courseRosterList[j].id 
-						&& item.classDate == `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`;
-					});
+			// 	let generalKeyBody 			= `${this.state.courseRosterList[j].id}-date-${currentCheckDate}-course-${this.state.currentCourseId}`;
+			// 	let currentAttendenceRecord = this.state.attendanceStateList[attendanceIndex];
+			// 	let isChecked 				= !currentAttendenceRecord.hasAttended;
 
-				let generalKeyBody 			= `${this.state.courseRosterList[j].id}-date-${currentCheckDate}-course-${this.state.currentCourseId}`;
-				let currentAttendenceRecord = this.state.attendanceStateList[attendanceIndex];
-				let isChecked 				= !currentAttendenceRecord.hasAttended;
+			// 	if(!this.state.displayPrintableView){
+			// 		const checkboxProps = {
+			// 			name 				: "attendanceStateList",
+			// 			defaultChecked		: !currentAttendenceRecord.hasAttended ,
+			// 			value 				: this.state.courseRosterList[j].id ,
+			// 			id 					: `student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}` ,
+			// 			key 				: `student-${generalKeyBody}` ,
+			// 			onClick 			: this.handleCheckboxClick ,
+			// 			"data-date" 		: `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`, 
+			// 			"data-stateindex"	: attendanceIndex,
+			// 			"data-stateid" 		: currentAttendenceRecord != undefined && currentAttendenceRecord != null ? 
+			// 									currentAttendenceRecord.id : -1
+			// 		};
 
-				if(!this.state.displayPrintableView){
-					const checkboxProps = {
-						name 				: "attendanceStateList",
-						defaultChecked		: !currentAttendenceRecord.hasAttended ,
-						value 				: this.state.courseRosterList[j].id ,
-						id 					: `student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}` ,
-						key 				: `student-${generalKeyBody}` ,
-						onClick 			: this.handleCheckboxClick ,
-						"data-date" 		: `${currentCourseMonth}-${currentCourseDate}-${this.state.courseDays[i].getFullYear()}`, 
-						"data-stateindex"	: attendanceIndex,
-						"data-stateid" 		: currentAttendenceRecord != undefined && currentAttendenceRecord != null ? 
-												currentAttendenceRecord.id : -1
-					};
+			// 		attendanceBodySet.push(
+			// 			<td 
+			// 				className="rollSheetCell" 
+			// 				key={`student-td-${generalKeyBody}`}
+			// 			>
+			// 				<input type="checkbox" {...checkboxProps} />
+			// 			</td>
+			// 		)
+			// 	}
+			// 	else{
+			// 		attendanceBodySet.push(
+			// 			<td 
+			// 				className="rollSheetCell"
+			// 				key={`cell-${generalKeyBody}-printable`}
+			// 			>
 
-					attendanceBodySet.push(
-						<td 
-							className="rollSheetCell" 
-							key={`student-td-${generalKeyBody}`}
-						>
-							<input type="checkbox" {...checkboxProps} />
-						</td>
-					)
-				}
-				else{
-					attendanceBodySet.push(
-						<td 
-							className="rollSheetCell"
-							key={`cell-${generalKeyBody}-printable`}
-						>
-
-								<span 
-									type="checkbox" 
-									checked
-									id={`student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}-printable`}
-									key={`student-${generalKeyBody}-printable`}
-								>
-										{isChecked ? "" : "X"}
-								</span>
-						</td>
-					)
-				}
-			}
+			// 					<span 
+			// 						type="checkbox" 
+			// 						checked
+			// 						id={`student-${this.state.courseRosterList[j].id}-date-${currentCheckDate}-printable`}
+			// 						key={`student-${generalKeyBody}-printable`}
+			// 					>
+			// 							{isChecked ? "" : "X"}
+			// 					</span>
+			// 			</td>
+			// 		)
+			// 	}
+			// }
 			tableBodySet.push((
 								<tr key={`student-header-row-${uuidv1()}`}>
 									<th className="rollSheetCell rollSheetNameCell" 
@@ -445,7 +589,8 @@ class RollSheetContainer extends React.Component<Props, State>{
 					}
 				</button>
 				{
-					!this.state.displayPrintableView ? <React.Fragment /> : <Paginator/>
+					!this.state.displayPrintableView ? 
+						<React.Fragment /> : <Paginator handlePagination={this.handlePagination} />
 				}
 			</React.Fragment>
 		);
