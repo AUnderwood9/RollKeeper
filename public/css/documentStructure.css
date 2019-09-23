@@ -6,6 +6,10 @@ table{
 	table-layout: fixed;
 }
 
+form{
+	width: inherit;
+}
+
 .mainContainer{
 	width: 80vw;
 	margin: 0 auto;
@@ -68,8 +72,38 @@ table{
 	background-color: white;
 }
 
-.printableTableBody>tr:first-child{
-	line-height: 0;
+.printableTableBody.rollSheetBody{
+	display: grid;
+	/* grid-template-rows: repeat(21, 50px);
+	grid-template-columns: 200px repeat(25, 25px); */
+	grid-template-rows: repeat(21, auto);
+	overflow: unset;
+	/* grid-template-columns: repeat(21, 50px); */
+	text-align: center;
+}
+
+.rollSheetRow{
+	width: 100%;
+	display: grid;
+    grid-template-columns: 2fr repeat(25, 1fr);
+}
+
+.printableTableBody.rollSheetBody .rollSheetCell{
+	width: unset;
+	border: 1px solid rgba(0,0,0,0.75);
+	/* border-left: 1px solid black;
+	border-bottom: 1px solid black;
+	border-top: 1px solid black; */
+}
+
+
+.printableTableBody.rollSheetBody .rollSheetRow div:first-child{
+	width: 200px;
+	border: 1px solid black;
+}
+
+.printableTableBody.rollSheetBody .rollSheetRow:first-child div{
+	border: 1px solid black;
 }
 
 .rollSheetBody th {
@@ -116,17 +150,6 @@ table{
 	justify-self: center;
 }
 
-.printableTableBody .rollSheetCell.rollSheetNameCell p {
-    width: 165px;
-}
-
-.printableTableBody.rollSheetBody th {
-    position: unset;
-    position: unset;
-    left: unset;
-	background-color: unset;
-}
-
 .paginatorContainer{
 	display: flex;
     justify-content: space-evenly;
@@ -143,14 +166,6 @@ table{
 		width: 100%;
 	}
 
-	.rollSheetCell{
-		font-size: 10px;
-	}
-	
-	/* .rollSheetCell.rollSheetNameCell p {
-		width: 1em;
-	} */
-
 	.mainContainer {
 		width: 90vw;
 	}
@@ -158,4 +173,9 @@ table{
 	.paginatorContainer, .viewTypeBtn{
 		display: none;
 	}
+}
+
+@page { 
+	size: auto;  
+	margin: 0mm; 
 }
